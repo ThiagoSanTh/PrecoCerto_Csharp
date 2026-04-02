@@ -1,0 +1,22 @@
+﻿using Pc.Dominio.Entities.Base;
+using Pc.Dominio.Entities.Catalogo;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Pc.Dominio.Entities.Estabelecimentos
+{
+    public class Loja : BaseEntity
+    {
+        public string NomeFantasia { get; set; } = string.Empty;
+        public string? RazaoSocial { get; set; }
+        public string? Cnpj { get; set; } = string.Empty;
+        public string? Telefone { get; set; }
+        public string? Email { get; set; }
+        public string? Descricao { get; set; }
+        public Guid EnderecoId { get; set; }
+        public Endereco Endereco { get; set; } = new Endereco();
+        public ICollection<Oferta> Ofertas { get; set; } = new List<Oferta>();
+
+    }
+}
