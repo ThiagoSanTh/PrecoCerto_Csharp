@@ -2,10 +2,11 @@
 .vs/
 bin/
 obj/
+/BackEnd/appsettings.json
+*/BackEnd/appsettings.json
 
 # User-specific files
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
-**/BackEnd/appsettings.json
