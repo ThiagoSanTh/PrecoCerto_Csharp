@@ -1,17 +1,33 @@
+using Microsoft.EntityFrameworkCore;
+using Pc.Infraestrutura;
+using Pc.Repositorio.Implementacoes;
+using Pc.Repositorio.Interfaces;
+using Pc.Servico.Implementacoes;
+using Pc.Servico.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IProdutoRepositorio, ProdutoRepositorio>();
+builder.Services.AddScoped<ILojaRepositorio, LojaRepositorio>();
+builder.Services.AddScoped<IOfertaRepositorio, OfertaRepositorio>();
+builder.Services.AddScoped<IProdutoServico, ProdutoService>();
+builder.Services.AddScoped<ILojaServico, LojaService>();
+builder.Services.AddScoped<IOfertaServico, OfertaService>();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
