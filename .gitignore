@@ -8,3 +8,4 @@ obj/
 *.suo
 *.userosscache
 *.sln.docstates
+**/BackEnd/appsettings.json
