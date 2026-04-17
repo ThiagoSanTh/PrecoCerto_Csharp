@@ -26,12 +26,12 @@ namespace Pc.Servico.Implementacoes
             return await _lojaRepositorio.AdicionarAsync(loja);
         }
 
-        public async Task<Loja?> ObterPorIdAsync(Guid id)
+        public async Task<Loja?> ObterLojaPorIdAsync(Guid id)
         {
             return await _lojaRepositorio.ObterPorIdAsync(id);
         }
 
-        public async Task<List<Loja>> ListarAsync()
+        public async Task<List<Loja>> ListarLojasAsync()
         {
             return await _lojaRepositorio.ListarAsync();
         }
@@ -41,7 +41,7 @@ namespace Pc.Servico.Implementacoes
             return await _lojaRepositorio.BuscarPorNomeAsync(nome);
         }
 
-        public async Task AtualizarAsync(Loja loja)
+        public async Task AtualizarLojaAsync(Loja loja)
         {
             if (string.IsNullOrWhiteSpace(loja.NomeFantasia))
                 throw new Exception("O nome fantasia da loja é obrigatório.");
@@ -49,9 +49,10 @@ namespace Pc.Servico.Implementacoes
             await _lojaRepositorio.AtualizarAsync(loja);
         }
 
-        public async Task RemoverAsync(Guid id)
+        public async Task RemoverLojaAsync(Guid id)
         {
             await _lojaRepositorio.RemoverAsync(id);
         }
+
     }
 }

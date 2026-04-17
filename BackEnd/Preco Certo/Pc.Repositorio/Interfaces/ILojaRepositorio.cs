@@ -10,5 +10,10 @@ namespace Pc.Repositorio.Interfaces
     public interface ILojaRepositorio : IRepositorio<Loja>
     {
         Task<List<Loja>> BuscarPorNomeAsync(string nome);
+        Task<List<Loja>> ListarLojasAsync(string nome);
+        Task<Loja?> ObterLojaPorIdAsync(Guid id);
+        Task<Loja> AdicionarLojaAsync(Loja loja);
+        Task<Loja> RemoverLojaAsync(Guid id);
+        Task<Loja> AtualizarLojaAsync(Loja loja);
     }
 }

@@ -1,63 +1,34 @@
-import { View, Text, Pressable, FlatList, Dimensions } from 'react-native';
-import { styles, colors } from '../style';
+import { View, Text, Pressable, FlatList, Alert } from 'react-native';
 import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { listarProdutos } from '../services/productService';
+import { styles } from '../style';
 
 export default function ProductsScreen({ navigation }) {
-  const [products, setProducts] = useState([]);
-
-  const screenWidth = Dimensions.get('window').width;
-  const numColumns = screenWidth > 600 ? 3 : 2;
-  const itemWidth = screenWidth / numColumns - 20;
+  const [produtos, setProdutos] = useState([]);
 
   useEffect(() => {
-    loadProducts();
+    carregarProdutos();
 
     const unsubscribe = navigation.addListener('focus', () => {
-      loadProducts();
+      carregarProdutos();
     });
 
     return unsubscribe;
   }, [navigation]);
 
-  async function loadProducts() {
-    const data = await AsyncStorage.getItem('@products');
-    const lojaData = await AsyncStorage.getItem('@lojas');
-    const loggedData = await AsyncStorage.getItem('@loggedUser');
-
-    if (!data || !lojaData || !loggedData) return;
-
-    const products = JSON.parse(data);
-    const lojas = JSON.parse(lojaData);
-    const user = JSON.parse(loggedData);
-
-    const loja = lojas.find(l => l.userEmail === user.email);
-    if (!loja) return;
-
-    const myProducts = products.filter(p => p.lojaId === loja.id);
-
-    setProducts(myProducts);
-  }
-
-  function renderItem({ item }) {
-    return (
-      <View
-        style={styles.card}
-      >
-        <Text style={{ color: colors.text, fontWeight: 'bold' }}>
-          {item.nome}
-        </Text>
-
-        <Text style={{ color: colors.text, marginTop: 5 }}>
-          R$ {item.preco}
-        </Text>
-      </View>
-    );
+  async function carregarProdutos() {
+    try {
+      const dados = await listarProdutos();
+      setProdutos(dados);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Não foi possível carregar os produtos');
+    }
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.formTitle}>Meus Produtos 📦</Text>
+      <Text style={styles.formTitle}>Produtos</Text>
 
       <Pressable
         style={styles.formButton}
@@ -67,12 +38,15 @@ export default function ProductsScreen({ navigation }) {
       </Pressable>
 
       <FlatList
-        data={products}
+        data={produtos}
         keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        numColumns={numColumns}
-        columnWrapperStyle={{ justifyContent: 'space-between' }}
-        style={{ marginTop: 20 }}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text>{item.nome || item.nomeProduto}</Text>
+            <Text>{item.marca}</Text>
+            <Text>{item.descricao}</Text>
+          </View>
+        )}
       />
     </View>
   );

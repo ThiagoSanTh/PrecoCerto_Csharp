@@ -22,33 +22,6 @@ namespace Pc.Infraestrutura.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Pc.Dominio.Entities.Catalogo.Categoria", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("DataAtualizacao")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Descricao")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Categorias");
-                });
-
             modelBuilder.Entity("Pc.Dominio.Entities.Catalogo.Endereco", b =>
                 {
                     b.Property<Guid>("Id")
@@ -102,9 +75,6 @@ namespace Pc.Infraestrutura.Migrations
                     b.Property<bool>("Ativo")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("CategoriaId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("CodigoBarras")
                         .HasColumnType("text");
 
@@ -120,13 +90,11 @@ namespace Pc.Infraestrutura.Migrations
                     b.Property<string>("Marca")
                         .HasColumnType("text");
 
-                    b.Property<string>("Nome")
+                    b.Property<string>("NomeProduto")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CategoriaId");
 
                     b.ToTable("Produtos");
                 });
@@ -158,6 +126,9 @@ namespace Pc.Infraestrutura.Migrations
                     b.Property<Guid>("EnderecoId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("LojistaId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("NomeFantasia")
                         .IsRequired()
                         .HasColumnType("text");
@@ -171,6 +142,9 @@ namespace Pc.Infraestrutura.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("EnderecoId");
+
+                    b.HasIndex("LojistaId")
+                        .IsUnique();
 
                     b.ToTable("Lojas");
                 });
@@ -425,8 +399,6 @@ namespace Pc.Infraestrutura.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LojaId");
-
                     b.HasIndex("UsuarioId");
 
                     b.ToTable("Lojistas");
@@ -451,7 +423,7 @@ namespace Pc.Infraestrutura.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Nome")
+                    b.Property<string>("NomeUsuario")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -473,17 +445,6 @@ namespace Pc.Infraestrutura.Migrations
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("Pc.Dominio.Entities.Catalogo.Produto", b =>
-                {
-                    b.HasOne("Pc.Dominio.Entities.Catalogo.Categoria", "Categoria")
-                        .WithMany("Produtos")
-                        .HasForeignKey("CategoriaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Categoria");
-                });
-
             modelBuilder.Entity("Pc.Dominio.Entities.Estabelecimentos.Loja", b =>
                 {
                     b.HasOne("Pc.Dominio.Entities.Catalogo.Endereco", "Endereco")
@@ -492,7 +453,15 @@ namespace Pc.Infraestrutura.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Pc.Dominio.Entities.Usuarios.Lojista", "Lojista")
+                        .WithOne("Loja")
+                        .HasForeignKey("Pc.Dominio.Entities.Estabelecimentos.Loja", "LojistaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Endereco");
+
+                    b.Navigation("Lojista");
                 });
 
             modelBuilder.Entity("Pc.Dominio.Entities.Estabelecimentos.Oferta", b =>
@@ -591,26 +560,13 @@ namespace Pc.Infraestrutura.Migrations
 
             modelBuilder.Entity("Pc.Dominio.Entities.Usuarios.Lojista", b =>
                 {
-                    b.HasOne("Pc.Dominio.Entities.Estabelecimentos.Loja", "Loja")
-                        .WithMany()
-                        .HasForeignKey("LojaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Pc.Dominio.Entities.Usuarios.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Loja");
-
                     b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("Pc.Dominio.Entities.Catalogo.Categoria", b =>
-                {
-                    b.Navigation("Produtos");
                 });
 
             modelBuilder.Entity("Pc.Dominio.Entities.Estabelecimentos.Loja", b =>
@@ -627,6 +583,11 @@ namespace Pc.Infraestrutura.Migrations
                     b.Navigation("HistoricosPesquisa");
 
                     b.Navigation("Preferencias");
+                });
+
+            modelBuilder.Entity("Pc.Dominio.Entities.Usuarios.Lojista", b =>
+                {
+                    b.Navigation("Loja");
                 });
 #pragma warning restore 612, 618
         }
