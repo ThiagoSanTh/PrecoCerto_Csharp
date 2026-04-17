@@ -1,20 +1,28 @@
 import { StyleSheet } from 'react-native';
 
+export const colors = {
+    primary: '#2DD4BF',
+    primaryDark: '#14B8A6',
+    background: '#FFFFFF',
+    card: '#1E293B',
+    text: '#FFFFFF'
+  };
+
 export const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#fff',
+      backgroundColor: colors.background,
       alignItems: 'center',
       justifyContent: 'center',
     },
     formTitle: {
         fontSize: 36,
         fontWeight: 'bold',
-        color: 'green',
+        color: colors.primary,
         margin: 10,
     },
     formInput: {
-        borderColor: 'green',
+        borderColor: colors.primary,
         borderWidth: 1,
         borderRadius: 10,
         fontSize: 22,
@@ -23,7 +31,7 @@ export const styles = StyleSheet.create({
         margin: 10,
     },
     formButton: {
-        backgroundColor: 'green',
+        backgroundColor: colors.primary,
         width: '80%',
         margin: 10,
         padding: 10,
@@ -31,7 +39,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     textButton: {
-        color: 'white',
+        color: '#fff',
         fontSize: 20,
         fontWeight: 'bold',
     },
@@ -44,6 +52,15 @@ export const styles = StyleSheet.create({
         padding: 10,
     },
     subTextButton: {
-        color: 'green',
-    }
+        color: colors.primary,
+        fontSize: 14
+    },
+    card: {
+        flex: 1,
+        aspectRatio: 1.6,
+        margin: 6,
+        backgroundColor: colors.primaryDark,
+        padding: 10,
+        borderRadius: 10,
+      }
   });
