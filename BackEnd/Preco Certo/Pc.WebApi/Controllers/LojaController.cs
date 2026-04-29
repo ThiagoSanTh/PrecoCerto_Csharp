@@ -145,7 +145,7 @@ namespace Pc.WebApi.Controllers
             lojaExistente.Cnpj = lojaDto.Cnpj;
             lojaExistente.Telefone = lojaDto.Telefone;
             lojaExistente.Email = lojaDto.Email;
-            lojaExistente.EnderecoId = lojaDto.EnderecoId;
+            lojaExistente.EnderecoId = (Guid)lojaDto.EnderecoId;
             lojaExistente.LojistaId = (Guid)lojaDto.LojistaId;
 
 

@@ -21,9 +21,16 @@ export default function ProductsScreen({ navigation }) {
       const dados = await listarProdutos();
       setProdutos(dados);
     } catch (error) {
-      console.error(error);
+      console.error(error?.response?.data || error.message);
       Alert.alert('Erro', 'Não foi possível carregar os produtos');
     }
+  }
+
+  function formatarPreco(valor) {
+    return Number(valor).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
   }
 
   return (
@@ -45,6 +52,7 @@ export default function ProductsScreen({ navigation }) {
             <Text>{item.nome || item.nomeProduto}</Text>
             <Text>{item.marca}</Text>
             <Text>{item.descricao}</Text>
+            <Text>{formatarPreco(item.preco)}</Text>
           </View>
         )}
       />

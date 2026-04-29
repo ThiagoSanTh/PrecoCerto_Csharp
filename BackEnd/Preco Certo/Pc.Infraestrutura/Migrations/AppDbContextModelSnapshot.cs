@@ -94,6 +94,9 @@ namespace Pc.Infraestrutura.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal>("Preco")
+                        .HasColumnType("numeric");
+
                     b.HasKey("Id");
 
                     b.ToTable("Produtos");

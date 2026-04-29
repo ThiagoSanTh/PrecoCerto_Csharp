@@ -4,24 +4,32 @@ import { criarProduto } from '../services/productService';
 import { styles } from '../style';
 
 export default function CreateProductScreen({ navigation }) {
-  const [nome, setNome] = useState('');
+  const [nomeProduto, setNomeProduto] = useState('');
   const [descricao, setDescricao] = useState('');
   const [marca, setMarca] = useState('');
   const [codigoBarras, setCodigoBarras] = useState('');
+  const [preco, setPreco] = useState('');
 
   async function handleCreateProduct() {
     try {
-      if (!nome || !marca || !codigoBarras) {
+      const precoConvertido = Number(preco.replace(',', '.'));
+
+      if (!nomeProduto.trim() || !marca.trim() || !codigoBarras.trim()) {
         Alert.alert('Erro', 'Preencha os campos obrigatórios');
         return;
       }
 
+      if (Number.isNaN(precoConvertido) || precoConvertido <= 0) {
+        Alert.alert('Erro', 'Informe um preço válido');
+        return;
+      }
+
       const novoProduto = {
-        nome,
+        nomeProduto,
         descricao,
         marca,
         codigoBarras,
-        categoriaId: 'COLE_AQUI_O_GUID_DA_CATEGORIA_FIXA'
+        preco: precoConvertido
       };
 
       await criarProduto(novoProduto);
@@ -29,7 +37,7 @@ export default function CreateProductScreen({ navigation }) {
       Alert.alert('Sucesso', 'Produto criado com sucesso');
       navigation.goBack();
     } catch (error) {
-      console.error(error);
+      console.error(error?.response?.data || error.message);
       Alert.alert('Erro', 'Não foi possível criar o produto');
     }
   }
@@ -41,8 +49,8 @@ export default function CreateProductScreen({ navigation }) {
       <TextInput
         style={styles.formInput}
         placeholder="Nome"
-        value={nome}
-        onChangeText={setNome}
+        value={nomeProduto}
+        onChangeText={setNomeProduto}
       />
 
       <TextInput
@@ -64,6 +72,14 @@ export default function CreateProductScreen({ navigation }) {
         placeholder="Código de barras"
         value={codigoBarras}
         onChangeText={setCodigoBarras}
+      />
+
+      <TextInput
+        style={styles.formInput}
+        placeholder="Preço"
+        value={preco}
+        onChangeText={setPreco}
+        keyboardType="decimal-pad"
       />
 
       <Pressable style={styles.formButton} onPress={handleCreateProduct}>

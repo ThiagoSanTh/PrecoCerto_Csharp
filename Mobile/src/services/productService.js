@@ -6,7 +6,7 @@ export async function listarProdutos() {
 }
 
 export async function buscarProdutosPorNome(nome) {
-  const response = await api.get(`/produtos/buscar?nome=${encodeURIComponent(nome)}`);
+  const response = await api.post('/produtos/buscar', JSON.stringify(nome));
   return response.data;
 }
 
@@ -16,11 +16,9 @@ export async function criarProduto(produto) {
 }
 
 export async function atualizarProduto(id, produto) {
-  const response = await api.put(`/produtos/${id}`, produto);
-  return response.data;
+  await api.put(`/produtos/${id}`, produto);
 }
 
 export async function removerProduto(id) {
-  const response = await api.delete(`/produtos/${id}`);
-  return response.data;
+  await api.delete(`/produtos/${id}`);
 }

@@ -6,6 +6,6 @@
         public string? Descricao { get; set; }
         public string Marca { get; set; } = string.Empty;
         public string CodigoBarras { get; set; } = string.Empty;
-        //public Guid CategoriaId { get; set; }
+        public decimal Preco { get; set; }
     }
 }
