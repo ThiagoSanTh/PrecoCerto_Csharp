@@ -20,14 +20,12 @@
   O principal objetivo do <strong>Preço Certo</strong> é criar uma solução capaz de conectar consumidores e comércios locais através de uma plataforma inteligente de comparação de preços.
 </p>
 
-<p>Com isso, o sistema busca:</p>
-
 <ul>
-  <li>Permitir que o usuário encontre produtos mais baratos na sua região</li>
-  <li>Comparar preços entre diferentes estabelecimentos locais</li>
-  <li>Exibir promoções e disponibilidade de estoque</li>
-  <li>Utilizar geolocalização para priorizar lojas próximas</li>
-  <li>Incentivar o comércio local por meio de visibilidade e competitividade</li>
+  <li>Encontrar produtos mais baratos na região</li>
+  <li>Comparar preços entre estabelecimentos locais</li>
+  <li>Exibir promoções e disponibilidade</li>
+  <li>Utilizar geolocalização</li>
+  <li>Fortalecer o comércio local</li>
 </ul>
 
 <br>
@@ -36,32 +34,30 @@
 
 <pre>
 PrecoCerto
-├── PrecoCerto.Dominio        → Entidades e enums
-├── PrecoCerto.Aplicacao      → Serviços, DTOs e regras de negócio
-├── PrecoCerto.Infraestrutura → Banco de dados, EF Core e repositórios
-└── PrecoCerto.WebAPI         → Controllers e endpoints
+├── Pc.Dominio        → Entidades e enums
+├── Pc.Servico        → Regras de negócio
+├── Pc.Infraestrutura → EF Core + Banco de dados
+├── Pc.Repositorio    → Acesso a dados
+└── Pc.WebApi         → Controllers e endpoints
 </pre>
 
 <br>
 
 <h2>🧩 Entidades Principais</h2>
 
-<p>O núcleo do sistema é formado pelas seguintes entidades:</p>
-
 <ul>
-  <li><strong>Usuario</strong></li>
-  <li><strong>Cliente</strong></li>
-  <li><strong>Lojista</strong></li>
-  <li><strong>Loja</strong></li>
-  <li><strong>Endereco</strong></li>
-  <li><strong>Categoria</strong></li>
-  <li><strong>Produto</strong></li>
-  <li><strong>Oferta</strong></li>
-  <li><strong>Favorito</strong></li>
-  <li><strong>HistoricoPesquisa</strong></li>
-  <li><strong>Avaliacao</strong></li>
-  <li><strong>Cupom</strong></li>
-  <li><strong>Promocao</strong></li>
+  <li>Usuario</li>
+  <li>Cliente</li>
+  <li>Lojista</li>
+  <li>Loja</li>
+  <li>Endereco</li>
+  <li>Produto</li>
+  <li>Oferta</li>
+  <li>Favorito</li>
+  <li>HistoricoPesquisa</li>
+  <li>Avaliacao</li>
+  <li>Cupom</li>
+  <li>Promocao</li>
 </ul>
 
 <br>
@@ -78,31 +74,31 @@ PrecoCerto
   <tbody>
     <tr>
       <td>Cadastro de usuários</td>
-      <td>Permite registrar clientes e futuros lojistas no sistema.</td>
+      <td>Registro de clientes e lojistas</td>
     </tr>
     <tr>
       <td>Cadastro de lojas</td>
-      <td>Armazena informações do estabelecimento, endereço e localização.</td>
+      <td>Informações + localização</td>
     </tr>
     <tr>
       <td>Cadastro de produtos</td>
-      <td>Permite organizar itens por categoria, marca e identificação.</td>
+      <td>Organização dos itens</td>
     </tr>
     <tr>
       <td>Cadastro de ofertas</td>
-      <td>Relaciona produto + loja + preço + disponibilidade.</td>
+      <td>Produto + loja + preço</td>
     </tr>
     <tr>
-      <td>Busca inteligente</td>
-      <td>Busca por nome, categoria e filtros relevantes.</td>
+      <td>Busca</td>
+      <td>Pesquisa por nome e filtros</td>
     </tr>
     <tr>
       <td>Comparação de preços</td>
-      <td>Mostra ao usuário onde o item está mais barato.</td>
+      <td>Ranking de ofertas</td>
     </tr>
     <tr>
       <td>Geolocalização</td>
-      <td>Prioriza resultados próximos ao usuário.</td>
+      <td>Prioriza lojas próximas</td>
     </tr>
   </tbody>
 </table>
@@ -111,175 +107,79 @@ PrecoCerto
 
 <h2>📋 Checklist de Desenvolvimento</h2>
 
-<p>
-  A tabela abaixo apresenta as próximas tarefas do backend. Ela funciona como um roadmap técnico do projeto.
-</p>
-
 <table>
   <thead>
     <tr>
       <th>Status</th>
       <th>Categoria</th>
       <th>Tarefa</th>
-      <th>Observações</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>☐</td>
+      <td>✅</td>
       <td>Infraestrutura</td>
-      <td><strong>Criar AppDbContext</strong></td>
-      <td>Implementar a classe principal de contexto do Entity Framework Core contendo todos os DbSets das entidades. Essa classe será responsável pelo mapeamento entre o domínio e o banco de dados, além de centralizar a configuração de persistência.</td>
+      <td>AppDbContext criado</td>
     </tr>
     <tr>
-      <td>☐</td>
+      <td>⚠️</td>
       <td>Infraestrutura</td>
-      <td><strong>Configurar PostgreSQL</strong></td>
-      <td>Definir a connection string no arquivo de configuração, instalar os pacotes necessários do EF Core para PostgreSQL e registrar corretamente o contexto no Program.cs para injeção de dependência.</td>
+      <td>Configuração PostgreSQL (em ajuste)</td>
     </tr>
     <tr>
-      <td>☐</td>
+      <td>⚠️</td>
       <td>Infraestrutura</td>
-      <td><strong>Criar Migrations</strong></td>
-      <td>Gerar a primeira migration com base nas entidades do domínio já modeladas. Essa etapa transforma a estrutura das classes em instruções de criação do banco.</td>
+      <td>Migrations (em validação)</td>
     </tr>
     <tr>
-      <td>☐</td>
-      <td>Infraestrutura</td>
-      <td><strong>Aplicar Migrations</strong></td>
-      <td>Executar a atualização do banco de dados para criar as tabelas físicas. Após isso, validar se relacionamentos, chaves e tipos foram gerados corretamente.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
+      <td>⬜</td>
       <td>Repositório</td>
-      <td><strong>Criar interfaces de repositório</strong></td>
-      <td>Definir contratos como IUsuarioRepository, IProdutoRepository, ILojaRepository e IOfertaRepository para padronizar o acesso aos dados e facilitar futuras manutenções.</td>
+      <td>Interfaces de repositório</td>
     </tr>
     <tr>
-      <td>☐</td>
+      <td>⬜</td>
       <td>Repositório</td>
-      <td><strong>Implementar repositórios</strong></td>
-      <td>Criar as classes concretas que irão utilizar EF Core para realizar operações CRUD, consultas específicas e filtros de negócio no banco de dados.</td>
+      <td>Implementação de repositórios</td>
     </tr>
     <tr>
-      <td>☐</td>
+      <td>⬜</td>
       <td>Serviço</td>
-      <td><strong>Criar serviços principais</strong></td>
-      <td>Implementar classes como UsuarioService, LojaService, ProdutoService e OfertaService para concentrar regras de negócio e evitar que controllers fiquem sobrecarregados.</td>
+      <td>Serviços principais</td>
     </tr>
     <tr>
-      <td>☐</td>
+      <td>⬜</td>
       <td>Serviço</td>
-      <td><strong>Criar BuscaService</strong></td>
-      <td>Desenvolver a lógica central de pesquisa por nome, categoria, faixa de preço, disponibilidade e localização. Esse é um dos pontos mais importantes do projeto.</td>
+      <td>BuscaService</td>
     </tr>
     <tr>
-      <td>☐</td>
+      <td>⬜</td>
       <td>Serviço</td>
-      <td><strong>Criar ComparacaoService</strong></td>
-      <td>Implementar a lógica responsável por comparar preços entre lojas, montar ranking de ofertas e calcular economia para o usuário.</td>
+      <td>ComparacaoService</td>
     </tr>
     <tr>
-      <td>☐</td>
-      <td>DTO</td>
-      <td><strong>Criar DTOs</strong></td>
-      <td>Separar os modelos de entrada e saída da API das entidades de domínio, evitando exposição direta das classes principais e melhorando segurança e organização.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
-      <td>DTO</td>
-      <td><strong>Mapear entidades para DTOs</strong></td>
-      <td>Criar os mapeamentos manuais ou com AutoMapper para transformar corretamente os dados entre domínio, entrada da API e respostas enviadas ao frontend.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
-      <td>Validação</td>
-      <td><strong>Implementar validações</strong></td>
-      <td>Garantir que informações obrigatórias, formatos válidos e regras básicas de negócio sejam respeitados antes de persistir qualquer dado no sistema.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
+      <td>⚠️</td>
       <td>API</td>
-      <td><strong>Criar AuthController</strong></td>
-      <td>Implementar endpoints de autenticação, como registro, login e futuramente renovação de token, preparando o backend para acesso seguro pelo app mobile.</td>
+      <td>Controllers iniciais criados</td>
     </tr>
     <tr>
-      <td>☐</td>
+      <td>⬜</td>
       <td>API</td>
-      <td><strong>Criar ProdutosController</strong></td>
-      <td>Disponibilizar endpoints para cadastro, edição, consulta, listagem e busca de produtos, permitindo integração direta com o aplicativo React Native.</td>
+      <td>AuthController</td>
     </tr>
     <tr>
-      <td>☐</td>
-      <td>API</td>
-      <td><strong>Criar LojasController</strong></td>
-      <td>Criar endpoints para gerenciamento de lojas, consulta por localização e exibição detalhada de estabelecimentos cadastrados.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
-      <td>API</td>
-      <td><strong>Criar OfertasController</strong></td>
-      <td>Disponibilizar endpoints voltados para cadastro, atualização de preço, controle de disponibilidade e gerenciamento das ofertas por loja.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
-      <td>API</td>
-      <td><strong>Criar BuscaController</strong></td>
-      <td>Expor endpoints específicos para pesquisa e comparação de itens, centralizando o consumo que será usado pelo frontend mobile.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
+      <td>⬜</td>
       <td>Segurança</td>
-      <td><strong>Implementar autenticação JWT</strong></td>
-      <td>Configurar geração e validação de token JWT, protegendo rotas privadas e permitindo controle de sessão de forma moderna e escalável.</td>
+      <td>JWT</td>
     </tr>
     <tr>
-      <td>☐</td>
-      <td>Segurança</td>
-      <td><strong>Criar controle de acesso</strong></td>
-      <td>Definir permissões por perfil, como Cliente, Lojista e Administrador, garantindo que cada usuário acesse apenas os recursos adequados.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
+      <td>⬜</td>
       <td>Performance</td>
-      <td><strong>Implementar paginação</strong></td>
-      <td>Evitar retorno excessivo de dados em listas grandes, melhorando desempenho do backend e reduzindo consumo de rede no aplicativo.</td>
+      <td>Paginação</td>
     </tr>
     <tr>
-      <td>☐</td>
-      <td>Performance</td>
-      <td><strong>Implementar cache</strong></td>
-      <td>Armazenar resultados de consultas recorrentes, como categorias e produtos populares, para reduzir carga no banco e melhorar tempo de resposta.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
-      <td>Logs</td>
-      <td><strong>Criar logging estruturado</strong></td>
-      <td>Registrar eventos importantes, erros e fluxos críticos do sistema de forma organizada, permitindo monitoramento e manutenção mais eficiente.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
-      <td>Erros</td>
-      <td><strong>Middleware global de exceção</strong></td>
-      <td>Padronizar o tratamento de erros da API para que toda falha seja retornada de forma consistente, previsível e útil para debugging e frontend.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
+      <td>⬜</td>
       <td>Extras</td>
-      <td><strong>Implementar favoritos</strong></td>
-      <td>Permitir que usuários salvem lojas ou produtos de interesse, criando uma experiência mais personalizada e facilitando futuras consultas.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
-      <td>Extras</td>
-      <td><strong>Implementar avaliações</strong></td>
-      <td>Adicionar sistema de notas e comentários para lojas, ajudando outros usuários na tomada de decisão e aumentando a transparência da plataforma.</td>
-    </tr>
-    <tr>
-      <td>☐</td>
-      <td>Extras</td>
-      <td><strong>Implementar histórico de busca</strong></td>
-      <td>Registrar pesquisas realizadas pelo usuário para melhorar usabilidade, permitir sugestões futuras e apoiar recursos inteligentes posteriormente.</td>
+      <td>Favoritos / Avaliações</td>
     </tr>
   </tbody>
 </table>
@@ -289,11 +189,13 @@ PrecoCerto
 <h2>📌 Status Atual</h2>
 
 <ul>
-  <li>✅ Entidades principais do sistema modeladas</li>
-  <li>✅ Estrutura inicial do domínio organizada</li>
-  <li>⬜ Camada de persistência ainda em desenvolvimento</li>
-  <li>⬜ Serviços, repositórios e controllers ainda não concluídos</li>
-  <li>⬜ API ainda não preparada para integração completa com React Native</li>
+  <li>✅ Domínio estruturado e entidades criadas</li>
+  <li>✅ Projeto organizado em camadas</li>
+  <li>✅ API rodando com Swagger</li>
+  <li>⚠️ Integração com banco em andamento (PostgreSQL)</li>
+  <li>⚠️ Controllers em fase inicial</li>
+  <li>⬜ Regras de negócio ainda não implementadas</li>
+  <li>⬜ Integração completa com mobile ainda não finalizada</li>
 </ul>
 
 <br>
@@ -301,11 +203,12 @@ PrecoCerto
 <h2>🔮 Próximos Passos</h2>
 
 <ol>
-  <li>Finalizar persistência com EF Core e PostgreSQL</li>
-  <li>Criar repositórios e serviços</li>
-  <li>Implementar controllers e endpoints</li>
-  <li>Adicionar autenticação JWT</li>
-  <li>Preparar integração com React Native</li>
+  <li>Estabilizar conexão com PostgreSQL</li>
+  <li>Finalizar migrations</li>
+  <li>Implementar repositórios</li>
+  <li>Criar serviços</li>
+  <li>Finalizar controllers</li>
+  <li>Integrar com React Native (Expo)</li>
 </ol>
 
 <br>
@@ -314,9 +217,8 @@ PrecoCerto
 
 <p>
   <strong>Thiago Almeida Sant’Ana</strong><br>
-  <strong>Garbiel Almeida</strong><br>
+  <strong>Gabriel Almeida</strong><br>
   Engenharia de Software<br>
-  Projeto: <strong>Preço Certo</strong>
 </p>
 
 <br>
@@ -324,5 +226,5 @@ PrecoCerto
 <h2>📎 Observação Final</h2>
 
 <p>
-  Este projeto está em desenvolvimento contínuo e será expandido gradualmente com novas funcionalidades, melhorias de desempenho e integrações futuras.
+  O projeto está em evolução contínua. O foco atual está na consolidação do backend para permitir integração com o aplicativo mobile.
 </p>
