@@ -19,7 +19,12 @@ namespace Pc.Repositorio.Implementacoes
         public async Task<List<Produto>> BuscarPorNomeAsync(string nome)
         {
             return await _context.Produtos
-                .Where(p => p.Nome.ToLower().Contains(nome.ToLower())).ToListAsync();
+                .Where(p => p.NomeProduto.ToLower().Contains(nome.ToLower())).ToListAsync();
+        }
+        public async Task<List<Produto>> ListarProdutosAsync(string nome)
+        {
+            return await _context.Produtos
+                .Where(p => p.NomeProduto.ToLower().Contains(nome.ToLower())).ToListAsync();
         }
     }
 }

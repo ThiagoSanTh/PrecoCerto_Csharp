@@ -14,10 +14,10 @@ namespace Pc.Servico.Interfaces
     public interface ILojaServico
     {
         Task<Loja> AdicionarAsync(Loja loja);
-        Task<Loja?> ObterPorIdAsync(Guid id);
-        Task<List<Loja>> ListarAsync();
+        Task<Loja?> ObterLojaPorIdAsync(Guid id);
+        Task<List<Loja>> ListarLojasAsync();
         Task<List<Loja>> BuscarPorNomeAsync(string nome);
-        Task AtualizarAsync(Loja loja);
-        Task RemoverAsync(Guid id);
+        Task AtualizarLojaAsync(Loja loja);
+        Task RemoverLojaAsync(Guid id);
     }
 }

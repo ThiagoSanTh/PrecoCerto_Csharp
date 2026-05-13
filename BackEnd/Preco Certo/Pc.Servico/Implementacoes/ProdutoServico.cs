@@ -15,7 +15,7 @@ namespace Pc.Servico.Implementacoes
 
         public async Task<Produto> AdicionarAsync(Produto produto)
         {
-            if (string.IsNullOrWhiteSpace(produto.Nome))
+            if (string.IsNullOrWhiteSpace(produto.NomeProduto))
                 throw new Exception("O nome do produto é obrigatório.");
 
             return await _produtoRepositorio.AdicionarAsync(produto);
@@ -26,7 +26,7 @@ namespace Pc.Servico.Implementacoes
             return await _produtoRepositorio.ObterPorIdAsync(id);
         }
 
-        public async Task<List<Produto>> ListarAsync()
+        public async Task<List<Produto>> ListarProdutosAsync()
         {
             return await _produtoRepositorio.ListarAsync();
         }
@@ -38,7 +38,7 @@ namespace Pc.Servico.Implementacoes
 
         public async Task AtualizarAsync(Produto produto)
         {
-            if (string.IsNullOrWhiteSpace(produto.Nome))
+            if (string.IsNullOrWhiteSpace(produto.NomeProduto))
                 throw new Exception("O nome do produto é obrigatório.");
 
             await _produtoRepositorio.AtualizarAsync(produto);

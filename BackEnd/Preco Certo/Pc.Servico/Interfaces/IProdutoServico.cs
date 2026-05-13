@@ -6,7 +6,7 @@ namespace Pc.Servico.Interfaces
     {
         Task<Produto> AdicionarAsync(Produto produto);
         Task<Produto?> ObterPorIdAsync(Guid id);
-        Task<List<Produto>> ListarAsync();
+        Task<List<Produto>> ListarProdutosAsync();
         Task<List<Produto>> BuscarPorNomeAsync(string nome);
         Task AtualizarAsync(Produto produto);
         Task RemoverAsync(Guid id);
