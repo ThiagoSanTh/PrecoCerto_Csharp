@@ -345,53 +345,6 @@ namespace Pc.Infraestrutura.Migrations
                     b.ToTable("PreferenciasClientes");
                 });
 
-            modelBuilder.Entity("Pc.Dominio.Entities.Usuarios.Admin", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("DataAtualizacao")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("NivelAcesso")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("NomeUsuario")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Permissoes")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SenhaHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Telefone")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Tipo")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UltimoLogin")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Admins");
-                });
-
             modelBuilder.Entity("Pc.Dominio.Entities.Usuarios.Cliente", b =>
                 {
                     b.Property<Guid>("Id")
@@ -407,34 +360,18 @@ namespace Pc.Infraestrutura.Migrations
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<decimal?>("LatitudeAtual")
                         .HasColumnType("numeric");
 
                     b.Property<decimal?>("LongitudeAtual")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("NomeUsuario")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SenhaHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Telefone")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Tipo")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UltimoLogin")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Clientes");
                 });
@@ -457,12 +394,37 @@ namespace Pc.Infraestrutura.Migrations
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("LojaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Lojistas");
+                });
+
+            modelBuilder.Entity("Pc.Dominio.Entities.Usuarios.Usuario", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<Guid>("LojaId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("NomeUsuario")
                         .IsRequired()
@@ -483,7 +445,7 @@ namespace Pc.Infraestrutura.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Lojistas");
+                    b.ToTable("Usuarios");
                 });
 
             modelBuilder.Entity("Pc.Dominio.Entities.Estabelecimentos.Loja", b =>
@@ -586,6 +548,28 @@ namespace Pc.Infraestrutura.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("Pc.Dominio.Entities.Usuarios.Cliente", b =>
+                {
+                    b.HasOne("Pc.Dominio.Entities.Usuarios.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Pc.Dominio.Entities.Usuarios.Lojista", b =>
+                {
+                    b.HasOne("Pc.Dominio.Entities.Usuarios.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Pc.Dominio.Entities.Estabelecimentos.Loja", b =>

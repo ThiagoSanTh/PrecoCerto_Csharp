@@ -26,37 +26,14 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 🔥 DI - Repositorios (Catalogo e Estabelecimentos)
+// 🔥 DI
 builder.Services.AddScoped<IProdutoRepositorio, ProdutoRepositorio>();
 builder.Services.AddScoped<ILojaRepositorio, LojaRepositorio>();
 builder.Services.AddScoped<IOfertaRepositorio, OfertaRepositorio>();
 
-// 🔥 DI - Repositorios (Usuarios) - Consolidado (sem Usuario intermediário)
-builder.Services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
-builder.Services.AddScoped<ILojistaRepositorio, LojistaRepositorio>();
-builder.Services.AddScoped<IAdminRepositorio, AdminRepositorio>();
-
-// 🔥 DI - Repositorios (Interacoes)
-builder.Services.AddScoped<IFavoritoRepositorio, FavoritoRepositorio>();
-builder.Services.AddScoped<IHistoricoPesquisaRepositorio, HistoricoPesquisaRepositorio>();
-builder.Services.AddScoped<IAvaliacaoRepositorio, AvaliacaoRepositorio>();
-builder.Services.AddScoped<IPreferenciaClienteRepositorio, PreferenciaClienteRepositorio>();
-
-// 🔥 DI - Servicos (Catalogo e Estabelecimentos)
 builder.Services.AddScoped<IProdutoServico, ProdutoService>();
 builder.Services.AddScoped<ILojaServico, LojaService>();
 builder.Services.AddScoped<IOfertaServico, OfertaService>();
-
-// 🔥 DI - Servicos (Usuarios) - Consolidado (sem Usuario intermediário)
-builder.Services.AddScoped<IClienteServico, ClienteServico>();
-builder.Services.AddScoped<ILojistaServico, LojistaServico>();
-builder.Services.AddScoped<IAdminServico, AdminServico>();
-
-// 🔥 DI - Servicos (Interacoes)
-builder.Services.AddScoped<IFavoritoServico, FavoritoServico>();
-builder.Services.AddScoped<IHistoricoPesquisaServico, HistoricoPesquisaServico>();
-builder.Services.AddScoped<IAvaliacaoServico, AvaliacaoServico>();
-builder.Services.AddScoped<IPreferenciaClienteServico, PreferenciaClienteServico>();
 
 // 🔥 DB
 builder.Services.AddDbContext<AppDbContext>(options =>
