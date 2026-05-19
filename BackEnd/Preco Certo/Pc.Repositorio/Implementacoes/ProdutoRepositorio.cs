@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pc.Dominio.Entities.Catalogo;
 using Pc.Infraestrutura;
 using Pc.Repositorio.Interfaces;
-
 
 namespace Pc.Repositorio.Implementacoes
 {
@@ -16,15 +10,29 @@ namespace Pc.Repositorio.Implementacoes
         public ProdutoRepositorio(AppDbContext context) : base(context)
         {
         }
-        public async Task<List<Produto>> BuscarPorNomeAsync(string nome)
+
+        public async Task<List<Produto>> ListarPorLojaAsync(Guid? lojaId = null)
         {
-            return await _context.Produtos
-                .Where(p => p.NomeProduto.ToLower().Contains(nome.ToLower())).ToListAsync();
+            var query = _context.Produtos.AsQueryable();
+
+            if (lojaId.HasValue)
+                query = query.Where(p => p.LojaId == lojaId);
+
+            return await query.OrderBy(p => p.NomeProduto).ToListAsync();
         }
-        public async Task<List<Produto>> ListarProdutosAsync(string nome)
+
+        public async Task<List<Produto>> BuscarPorNomeAsync(string nome, Guid? lojaId = null)
         {
-            return await _context.Produtos
-                .Where(p => p.NomeProduto.ToLower().Contains(nome.ToLower())).ToListAsync();
+            var termo = nome.Trim().ToLower();
+            var query = _context.Produtos
+                .Where(p => p.NomeProduto.ToLower().Contains(termo)
+                    || (p.Marca != null && p.Marca.ToLower().Contains(termo))
+                    || (p.Descricao != null && p.Descricao.ToLower().Contains(termo)));
+
+            if (lojaId.HasValue)
+                query = query.Where(p => p.LojaId == lojaId);
+
+            return await query.OrderBy(p => p.NomeProduto).ToListAsync();
         }
     }
 }

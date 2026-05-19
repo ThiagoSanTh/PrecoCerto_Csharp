@@ -1,138 +1,196 @@
-import { View, Text, TextInput, Pressable, Alert } from 'react-native';
-import { styles } from '../style';
-import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, Text, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
+import { atualizarCliente, alterarSenha } from '../services/clienteService';
+import {
+  FormScreen,
+  FormField,
+  PrimaryButton,
+  SecondaryButton,
+  ListCard,
+  ListCardText,
+  formStyles,
+} from '../components/form';
+import { colors } from '../style';
 
 export default function UserScreen({ navigation }) {
+  const { session, logout, sincronizarGpsCliente, isCliente, isLojista, salvarSessao } =
+    useAuth();
+
+  const [nomeUsuario, setNomeUsuario] = useState('');
   const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [hasStore, setHasStore] = useState(false);
+  const [telefone, setTelefone] = useState('');
+  const [senhaAtual, setSenhaAtual] = useState('');
+  const [novaSenha, setNovaSenha] = useState('');
+  const [gpsStatus, setGpsStatus] = useState('');
+  const [loadingGps, setLoadingGps] = useState(false);
+  const [temLoja, setTemLoja] = useState(false);
 
-  useEffect(() => {
-    loadUser();
-    checkStore();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (session?.perfil) {
+        setNomeUsuario(session.perfil.nomeUsuario || '');
+        setEmail(session.perfil.email || '');
+        setTelefone(session.perfil.telefone || '');
+        if (session.perfil.lojaId) setTemLoja(true);
+      }
+      if (isCliente) verificarLojaLojista();
+    }, [session])
+  );
 
-  async function loadUser() {
-    const data = await AsyncStorage.getItem('@loggedUser');
-
-    if (data) {
-      const user = JSON.parse(data);
-      setEmail(user.email);
-      setSenha(user.senha);
+  async function verificarLojaLojista() {
+    try {
+      if (session?.perfil?.lojaId) setTemLoja(true);
+    } catch {
+      setTemLoja(false);
     }
   }
 
-  async function checkStore() {
-    const data = await AsyncStorage.getItem('@lojas');
+  async function handleAtualizarPerfil() {
+    if (!isCliente || !session?.perfil?.id) return;
 
-    if (data) {
-      const lojas = JSON.parse(data);
-      if (lojas.length > 0) {
-        setHasStore(true);
-      }
+    try {
+      const atualizado = await atualizarCliente(session.perfil.id, {
+        nomeUsuario: nomeUsuario.trim(),
+        email: email.trim(),
+        telefone: telefone.trim() || null,
+        senha: '',
+      });
+      await salvarSessao({ tipo: 'cliente', perfil: atualizado }, 'user');
+      Alert.alert('Sucesso', 'Perfil atualizado');
+    } catch (error) {
+      Alert.alert('Erro', String(error.response?.data || error.message));
     }
   }
 
-  async function handleUpdate() {
-    if (!email || !senha) {
-      Alert.alert('Erro', 'Preencha os campos');
+  async function handleAlterarSenha() {
+    if (!session?.perfil?.id || !senhaAtual || !novaSenha) {
+      Alert.alert('Erro', 'Preencha as senhas');
       return;
     }
 
-    const data = await AsyncStorage.getItem('@users');
-
-    if (!data) {
-      Alert.alert('Erro', 'Usuários não encontrados');
+    if (!isCliente) {
+      Alert.alert('Info', 'Alteração de senha do lojista: use o endpoint de lojistas na API.');
       return;
     }
 
-    let users = JSON.parse(data);
-
-    const loggedData = await AsyncStorage.getItem('@loggedUser');
-    const loggedUser = JSON.parse(loggedData);
-
-    const emailExists = users.find(
-      u => u.email === email && u.email !== loggedUser.email
-    );
-
-    if (emailExists) {
-      Alert.alert('Erro', 'Este e-mail já está em uso');
-      return;
+    try {
+      await alterarSenha(session.perfil.id, senhaAtual, novaSenha);
+      Alert.alert('Sucesso', 'Senha alterada');
+      setSenhaAtual('');
+      setNovaSenha('');
+    } catch (error) {
+      Alert.alert('Erro', String(error.response?.data || error.message));
     }
+  }
 
-    users = users.map(user => {
-      if (user.email === loggedUser.email) {
-        return { email, senha };
+  async function handleSincronizarGps() {
+    setLoadingGps(true);
+    setGpsStatus('');
+    try {
+      const coords = await sincronizarGpsCliente();
+      if (coords) {
+        setGpsStatus(
+          `GPS: ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
+        );
+      } else {
+        setGpsStatus('Não foi possível obter o GPS. Verifique permissões.');
       }
-      return user;
-    });
-
-    await AsyncStorage.setItem('@users', JSON.stringify(users));
-
-    const updatedUser = { email, senha };
-    await AsyncStorage.setItem('@loggedUser', JSON.stringify(updatedUser));
-
-    Alert.alert('Sucesso', 'Dados atualizados!');
+    } finally {
+      setLoadingGps(false);
+    }
   }
 
   async function handleLogout() {
-    await AsyncStorage.removeItem('@loggedUser');
+    await logout();
     navigation.replace('Login');
   }
 
-  async function goToStore() {
-    await AsyncStorage.setItem('@userMode', 'store');
+  async function goToUserMode() {
+    await salvarSessao(session, 'user');
     navigation.replace('Home');
   }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.formTitle}>Meu Perfil 👤</Text>
+  if (isLojista) {
+    return (
+      <FormScreen
+        title="Perfil lojista"
+        subtitle="Dados da sua conta"
+        scrollable={false}
+        footer={
+          <>
+            <PrimaryButton label="Modo cliente" onPress={goToUserMode} />
+            <SecondaryButton label="Sair" onPress={handleLogout} />
+          </>
+        }
+      >
+        <ListCard title={session.perfil.nomeUsuario}>
+          <ListCardText>{session.perfil.email}</ListCardText>
+          <ListCardText>Loja ID: {session.perfil.lojaId || '—'}</ListCardText>
+        </ListCard>
+      </FormScreen>
+    );
+  }
 
-      <TextInput
-        style={styles.formInput}
+  return (
+    <FormScreen
+      title="Meu perfil"
+      subtitle="Gerencie seus dados e localização"
+      scrollable
+      footer={<SecondaryButton label="Sair" onPress={handleLogout} />}
+    >
+      <Text style={formStyles.sectionHint}>
+        Localização obtida automaticamente pelo GPS — sem digitar coordenadas.
+      </Text>
+
+      <Pressable
+        style={[formStyles.primaryButton, loadingGps && formStyles.buttonDisabled]}
+        onPress={handleSincronizarGps}
+        disabled={loadingGps}
+      >
+        {loadingGps ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={formStyles.primaryButtonText}>Atualizar localização (GPS)</Text>
+        )}
+      </Pressable>
+
+      {gpsStatus ? (
+        <Text style={[formStyles.sectionHint, { color: colors.primaryDark }]}>{gpsStatus}</Text>
+      ) : null}
+
+      <FormField label="Nome de usuário" value={nomeUsuario} onChangeText={setNomeUsuario} />
+      <FormField
+        label="E-mail"
         value={email}
         onChangeText={setEmail}
-        placeholder="Email"
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+      <FormField
+        label="Telefone"
+        value={telefone}
+        onChangeText={setTelefone}
+        keyboardType="phone-pad"
       />
 
-      <TextInput
-        style={styles.formInput}
-        value={senha}
-        secureTextEntry
-        onChangeText={setSenha}
-        placeholder="Senha"
-      />
+      <PrimaryButton label="Salvar perfil" onPress={handleAtualizarPerfil} />
 
-      <Pressable style={styles.formButton} onPress={handleUpdate}>
-        <Text style={styles.textButton}>Atualizar Dados</Text>
-      </Pressable>
+      <Text style={[formStyles.summaryTitle, { marginTop: 16, marginBottom: 8 }]}>
+        Alterar senha
+      </Text>
+      <FormField label="Senha atual" value={senhaAtual} onChangeText={setSenhaAtual} secureTextEntry />
+      <FormField label="Nova senha" value={novaSenha} onChangeText={setNovaSenha} secureTextEntry />
+      <SecondaryButton label="Alterar senha" onPress={handleAlterarSenha} />
 
-      {!hasStore && (
-        <>
-          <Text style={{ color: '#fff', marginTop: 30 }}>
-            Quer começar a vender?
-          </Text>
-
-          <Pressable
-            style={styles.formButton}
-            onPress={() => navigation.navigate('CreateStore')}
-          >
-            <Text style={styles.textButton}>Criar Loja 🏪</Text>
-          </Pressable>
-        </>
-      )}
-
-      {hasStore && (
-        <Pressable style={styles.formButton} onPress={goToStore}>
-          <Text style={styles.textButton}>Ir para Loja 🏪</Text>
-        </Pressable>
-      )}
-
-      <Pressable style={styles.formButton} onPress={handleLogout}>
-        <Text style={styles.textButton}>Sair</Text>
-      </Pressable>
-    </View>
+      {!temLoja ? (
+        <PrimaryButton
+          label="Criar loja"
+          onPress={() => navigation.navigate('CreateStore')}
+          style={{ marginTop: 8 }}
+        />
+      ) : null}
+    </FormScreen>
   );
 }

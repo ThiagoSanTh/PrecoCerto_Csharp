@@ -1,15 +1,14 @@
-﻿using Pc.Dominio.Entities.Catalogo;
-using Pc.Dominio.Entities.Estabelecimentos;
+﻿using Pc.Dominio.Entities.Estabelecimentos;
 using Pc.Repositorio.Interfaces;
 using Pc.Servico.Interfaces;
 
 namespace Pc.Servico.Implementacoes
 {
-    public class OfertaService : IOfertaServico
+    public class OfertaServico : IOfertaServico
     {
         private readonly IOfertaRepositorio _ofertaRepositorio;
 
-        public OfertaService(IOfertaRepositorio ofertaRepositorio)
+        public OfertaServico(IOfertaRepositorio ofertaRepositorio)
         {
             _ofertaRepositorio = ofertaRepositorio;
         }

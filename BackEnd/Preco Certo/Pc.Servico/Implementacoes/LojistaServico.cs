@@ -20,7 +20,7 @@ namespace Pc.Servico.Implementacoes
 
         /// <summary>
         /// Registra um novo lojista
-        /// Validações: email único, NomeUsuario obrigatório, senha mínima 6 caracteres, LojaId obrigatório
+        /// Validações: email único, NomeUsuario obrigatório e senha mínima de 6 caracteres
         /// </summary>
         public async Task<Lojista> RegistrarAsync(Lojista lojista)
         {
@@ -32,9 +32,6 @@ namespace Pc.Servico.Implementacoes
 
             if (string.IsNullOrWhiteSpace(lojista.SenhaHash) || lojista.SenhaHash.Length < 6)
                 throw new Exception("Senha deve ter pelo menos 6 caracteres.");
-
-            if (lojista.LojaId == Guid.Empty)
-                throw new Exception("LojaId é obrigatório.");
 
             var lojistas = await _lojistaRepositorio.ListarAsync();
             if (lojistas.Exists(l => l.Email.ToLower() == lojista.Email.ToLower()))

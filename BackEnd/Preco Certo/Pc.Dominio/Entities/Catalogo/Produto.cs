@@ -1,4 +1,5 @@
 ﻿using Pc.Dominio.Entities.Base;
+using Pc.Dominio.Entities.Estabelecimentos;
 
 namespace Pc.Dominio.Entities.Catalogo
 {
@@ -9,5 +10,9 @@ namespace Pc.Dominio.Entities.Catalogo
         public string? Marca { get; set; }
         public string? CodigoBarras { get; set; }
         public decimal Preco { get; set; }
+
+        /// <summary>Loja que cadastrou o produto (null = legado / catálogo sem dono).</summary>
+        public Guid? LojaId { get; set; }
+        public Loja? Loja { get; set; }
     }
 }

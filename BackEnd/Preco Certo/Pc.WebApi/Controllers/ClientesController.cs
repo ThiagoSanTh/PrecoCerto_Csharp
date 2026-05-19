@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Pc.Dominio.Entities.Usuarios;
 using Pc.Servico.Interfaces;
-using Pc.WebApi.DTOs;
+using Pc.WebApi.DTOs.Comum;
+using Pc.WebApi.DTOs.Usuarios;
 
 namespace Pc.WebApi.Controllers
 {
@@ -65,12 +66,9 @@ namespace Pc.WebApi.Controllers
         /// Body: { "email": "user@email.com", "senha": "123456" }
         /// </summary>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] dynamic body)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var email = body?.email?.ToString();
-            var senha = body?.senha?.ToString();
-
-            var cliente = await _clienteServico.ValidarLoginAsync(email, senha);
+            var cliente = await _clienteServico.ValidarLoginAsync(dto.Email, dto.Senha);
 
             if (cliente == null)
                 return Unauthorized("Email ou senha incorretos.");
@@ -217,12 +215,9 @@ namespace Pc.WebApi.Controllers
         /// Body: { "latitude": -23.5505, "longitude": -46.6333 }
         /// </summary>
         [HttpPut("{id:guid}/localizacao")]
-        public async Task<IActionResult> AtualizarLocalizacao(Guid id, [FromBody] dynamic body)
+        public async Task<IActionResult> AtualizarLocalizacao(Guid id, [FromBody] LocalizacaoDto dto)
         {
-            var latitude = decimal.Parse(body?.latitude?.ToString() ?? "0");
-            var longitude = decimal.Parse(body?.longitude?.ToString() ?? "0");
-
-            await _clienteServico.AtualizarLocalizacaoAsync(id, latitude, longitude);
+            await _clienteServico.AtualizarLocalizacaoAsync(id, dto.Latitude, dto.Longitude);
 
             return Ok(new { mensagem = "Localização atualizada com sucesso" });
         }
@@ -262,12 +257,9 @@ namespace Pc.WebApi.Controllers
         /// Body: { "senhaAtual": "123456", "novaSenha": "654321" }
         /// </summary>
         [HttpPut("{id:guid}/senha")]
-        public async Task<IActionResult> AlterarSenha(Guid id, [FromBody] dynamic body)
+        public async Task<IActionResult> AlterarSenha(Guid id, [FromBody] AlterarSenhaDto dto)
         {
-            var senhaAtual = body?.senhaAtual?.ToString();
-            var novaSenha = body?.novaSenha?.ToString();
-
-            await _clienteServico.AlterarSenhaAsync(id, senhaAtual, novaSenha);
+            await _clienteServico.AlterarSenhaAsync(id, dto.SenhaAtual, dto.NovaSenha);
 
             return Ok(new { mensagem = "Senha alterada com sucesso" });
         }

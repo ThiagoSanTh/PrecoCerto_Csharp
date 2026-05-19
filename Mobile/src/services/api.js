@@ -2,7 +2,8 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 
 const LOCALHOST_PC = 'http://localhost:5132/api';
-const IP_REDE_LOCAL = 'http://192.168.1.77:5132/api';
+/** IP do PC na Wi-Fi (ipconfig → Adaptador Wi-Fi → IPv4). Atualize ou use EXPO_PUBLIC_API_URL no .env */
+const IP_REDE_LOCAL = 'http://192.168.1.79:5132/api';
 
 const baseURL =
   process.env.EXPO_PUBLIC_API_URL ||

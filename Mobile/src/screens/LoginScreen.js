@@ -1,12 +1,23 @@
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, Text, View, TextInput, Alert } from 'react-native';
-import { styles } from '../style';
+import { View, Text, Pressable, Alert } from 'react-native';
 import { useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loginCliente } from '../services/clienteService';
+import { loginLojista } from '../services/lojistaService';
+import { useAuth } from '../context/AuthContext';
+import {
+  FormScreen,
+  FormField,
+  FormTabs,
+  PrimaryButton,
+  formStyles,
+} from '../components/form';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [tipo, setTipo] = useState('cliente');
+  const [loading, setLoading] = useState(false);
+  const { salvarSessao, sincronizarGpsCliente } = useAuth();
 
   async function handleLogin() {
     if (!email || !senha) {
@@ -14,80 +25,80 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
-    const data = await AsyncStorage.getItem('@users');
-
-    if (!data) {
-      Alert.alert('Erro', 'Nenhum usuário cadastrado');
-      return;
+    setLoading(true);
+    try {
+      if (tipo === 'cliente') {
+        const perfil = await loginCliente(email.trim(), senha);
+        await salvarSessao({ tipo: 'cliente', perfil }, 'user');
+        await sincronizarGpsCliente();
+        navigation.replace('Home');
+      } else {
+        const perfil = await loginLojista(email.trim(), senha);
+        await salvarSessao({ tipo: 'lojista', perfil }, 'store');
+        navigation.replace('Home');
+      }
+    } catch (error) {
+      const msg =
+        error.response?.data ||
+        error.message ||
+        'Não foi possível entrar. Verifique email e senha.';
+      Alert.alert('Erro', String(msg));
+    } finally {
+      setLoading(false);
     }
-
-    const users = JSON.parse(data);
-
-    const user = users.find(
-      u => u.email === email && u.senha === senha
-    );
-
-    if (!user) {
-      Alert.alert(
-        'Usuário não encontrado',
-        'Deseja criar uma conta?',
-        [
-          { text: 'Cancelar' },
-          { text: 'Cadastrar', onPress: () => navigation.navigate('Cadastro') }
-        ]
-      );
-      return;
-    }
-
-    // ✅ Login OK
-    await AsyncStorage.setItem('@loggedUser', JSON.stringify(user));
-
-    navigation.replace('Home');
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.formTitle}>Login</Text>
+    <FormScreen
+      title="Preço Certo"
+      subtitle="Entre com sua conta"
+      footer={<PrimaryButton label="Entrar" onPress={handleLogin} loading={loading} />}
+    >
+      <FormTabs
+        options={[
+          { value: 'cliente', label: 'Cliente' },
+          { value: 'lojista', label: 'Lojista' },
+        ]}
+        value={tipo}
+        onChange={setTipo}
+      />
 
-      <TextInput
-        style={styles.formInput}
-        placeholder="Informe o email"
-        autoCapitalize="none"
+      {tipo === 'cliente' ? (
+        <Text style={formStyles.sectionHint}>
+          Após o login, sua localização é obtida automaticamente pelo GPS.
+        </Text>
+      ) : null}
+
+      <FormField
+        label="E-mail"
+        value={email}
         onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
       />
-
-      <TextInput
-        style={styles.formInput}
-        placeholder="Informe a senha"
-        secureTextEntry
+      <FormField
+        label="Senha"
+        value={senha}
         onChangeText={setSenha}
+        secureTextEntry
       />
 
-      <Pressable style={styles.formButton} onPress={handleLogin}>
-        <Text style={styles.textButton}>Logar</Text>
-      </Pressable>
-
-      <View style={styles.subContainer}>
+      <View style={formStyles.row}>
         <Pressable
           onPress={() => navigation.navigate('EsqueciSenha')}
-          style={styles.subButton}
+          style={{ flex: 1, paddingVertical: 8 }}
         >
-          <Text style={styles.subTextButton}>
-            Esqueci a senha
-          </Text>
+          <Text style={formStyles.linkText}>Esqueci a senha</Text>
         </Pressable>
-
         <Pressable
-          onPress={() => navigation.navigate('Cadastro')}
-          style={styles.subButton}
+          onPress={() => navigation.navigate('Cadastro', { tipoInicial: tipo })}
+          style={{ flex: 1, paddingVertical: 8, alignItems: 'flex-end' }}
         >
-          <Text style={styles.subTextButton}>
-            Novo usuário
-          </Text>
+          <Text style={formStyles.linkText}>Novo usuário</Text>
         </Pressable>
       </View>
 
       <StatusBar style="auto" />
-    </View>
+    </FormScreen>
   );
 }

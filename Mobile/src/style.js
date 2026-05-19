@@ -62,5 +62,56 @@ export const styles = StyleSheet.create({
         backgroundColor: colors.primaryDark,
         padding: 10,
         borderRadius: 10,
-      }
+      },
+    screenContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingTop: 48,
+      paddingHorizontal: 16,
+    },
+    listCard: {
+      backgroundColor: colors.primaryDark,
+      padding: 14,
+      borderRadius: 10,
+      marginBottom: 10,
+    },
+    listCardTitle: {
+      color: colors.text,
+      fontWeight: 'bold',
+      fontSize: 16,
+    },
+    listCardText: {
+      color: colors.text,
+      marginTop: 4,
+      fontSize: 14,
+    },
+    hint: {
+      color: '#64748B',
+      fontSize: 13,
+      marginVertical: 8,
+      textAlign: 'center',
+    },
+    tabRow: {
+      flexDirection: 'row',
+      marginBottom: 16,
+      gap: 8,
+    },
+    tabButton: {
+      flex: 1,
+      padding: 10,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.primary,
+      alignItems: 'center',
+    },
+    tabButtonActive: {
+      backgroundColor: colors.primary,
+    },
+    tabText: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    tabTextActive: {
+      color: '#fff',
+    },
   });

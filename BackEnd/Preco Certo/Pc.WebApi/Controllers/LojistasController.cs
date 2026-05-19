@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Pc.Dominio.Entities.Usuarios;
 using Pc.Servico.Interfaces;
-using Pc.WebApi.DTOs;
+using Pc.WebApi.DTOs.Comum;
+using Pc.WebApi.DTOs.Usuarios;
 
 namespace Pc.WebApi.Controllers
 {
@@ -50,7 +51,7 @@ namespace Pc.WebApi.Controllers
                 Telefone = novoLojista.Telefone,
                 Tipo = (int)novoLojista.Tipo,
                 UltimoLogin = novoLojista.UltimoLogin,
-                LojaId = novoLojista.LojaId,
+                LojaId = novoLojista.Loja?.Id ?? novoLojista.LojaId,
                 NomeLoja = novoLojista.Loja?.NomeFantasia ?? string.Empty,
                 Cargo = novoLojista.Cargo,
                 Ativo = novoLojista.Ativo,
@@ -66,12 +67,9 @@ namespace Pc.WebApi.Controllers
         /// Body: { "email": "user@email.com", "senha": "123456" }
         /// </summary>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] dynamic body)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var email = body?.email?.ToString();
-            var senha = body?.senha?.ToString();
-
-            var lojista = await _lojistaServico.ValidarLoginAsync(email, senha);
+            var lojista = await _lojistaServico.ValidarLoginAsync(dto.Email, dto.Senha);
 
             if (lojista == null)
                 return Unauthorized("Email ou senha incorretos.");
@@ -84,7 +82,7 @@ namespace Pc.WebApi.Controllers
                 Telefone = lojista.Telefone,
                 Tipo = (int)lojista.Tipo,
                 UltimoLogin = lojista.UltimoLogin,
-                LojaId = lojista.LojaId,
+                LojaId = lojista.Loja?.Id ?? lojista.LojaId,
                 NomeLoja = lojista.Loja?.NomeFantasia ?? string.Empty,
                 Cargo = lojista.Cargo,
                 Ativo = lojista.Ativo,
@@ -114,7 +112,7 @@ namespace Pc.WebApi.Controllers
                 Telefone = lojista.Telefone,
                 Tipo = (int)lojista.Tipo,
                 UltimoLogin = lojista.UltimoLogin,
-                LojaId = lojista.LojaId,
+                LojaId = lojista.Loja?.Id ?? lojista.LojaId,
                 NomeLoja = lojista.Loja?.NomeFantasia ?? string.Empty,
                 Cargo = lojista.Cargo,
                 Ativo = lojista.Ativo,
@@ -144,7 +142,7 @@ namespace Pc.WebApi.Controllers
                 Telefone = lojista.Telefone,
                 Tipo = (int)lojista.Tipo,
                 UltimoLogin = lojista.UltimoLogin,
-                LojaId = lojista.LojaId,
+                LojaId = lojista.Loja?.Id ?? lojista.LojaId,
                 NomeLoja = lojista.Loja?.NomeFantasia ?? string.Empty,
                 Cargo = lojista.Cargo,
                 Ativo = lojista.Ativo,
@@ -172,7 +170,7 @@ namespace Pc.WebApi.Controllers
                 Telefone = l.Telefone,
                 Tipo = (int)l.Tipo,
                 UltimoLogin = l.UltimoLogin,
-                LojaId = l.LojaId,
+                LojaId = l.Loja?.Id ?? l.LojaId,
                 NomeLoja = l.Loja?.NomeFantasia ?? string.Empty,
                 Cargo = l.Cargo,
                 Ativo = l.Ativo,
@@ -199,7 +197,7 @@ namespace Pc.WebApi.Controllers
                 Telefone = l.Telefone,
                 Tipo = (int)l.Tipo,
                 UltimoLogin = l.UltimoLogin,
-                LojaId = l.LojaId,
+                LojaId = l.Loja?.Id ?? l.LojaId,
                 NomeLoja = l.Loja?.NomeFantasia ?? string.Empty,
                 Cargo = l.Cargo,
                 Ativo = l.Ativo,
@@ -224,6 +222,7 @@ namespace Pc.WebApi.Controllers
             lojista.NomeUsuario = dto.NomeUsuario;
             lojista.Email = dto.Email;
             lojista.Telefone = dto.Telefone;
+            lojista.LojaId = dto.LojaId;
             lojista.Cargo = dto.Cargo;
 
             await _lojistaServico.AtualizarAsync(lojista);
@@ -236,7 +235,7 @@ namespace Pc.WebApi.Controllers
                 Telefone = lojista.Telefone,
                 Tipo = (int)lojista.Tipo,
                 UltimoLogin = lojista.UltimoLogin,
-                LojaId = lojista.LojaId,
+                LojaId = lojista.Loja?.Id ?? lojista.LojaId,
                 NomeLoja = lojista.Loja?.NomeFantasia ?? string.Empty,
                 Cargo = lojista.Cargo,
                 Ativo = lojista.Ativo,
@@ -252,12 +251,9 @@ namespace Pc.WebApi.Controllers
         /// Body: { "senhaAtual": "123456", "novaSenha": "654321" }
         /// </summary>
         [HttpPut("{id:guid}/senha")]
-        public async Task<IActionResult> AlterarSenha(Guid id, [FromBody] dynamic body)
+        public async Task<IActionResult> AlterarSenha(Guid id, [FromBody] AlterarSenhaDto dto)
         {
-            var senhaAtual = body?.senhaAtual?.ToString();
-            var novaSenha = body?.novaSenha?.ToString();
-
-            await _lojistaServico.AlterarSenhaAsync(id, senhaAtual, novaSenha);
+            await _lojistaServico.AlterarSenhaAsync(id, dto.SenhaAtual, dto.NovaSenha);
 
             return Ok(new { mensagem = "Senha alterada com sucesso" });
         }

@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Pc.Dominio.Entities.Usuarios;
 using Pc.Servico.Interfaces;
-using Pc.WebApi.DTOs;
+using Pc.WebApi.DTOs.Comum;
+using Pc.WebApi.DTOs.Usuarios;
 
 namespace Pc.WebApi.Controllers
 {
@@ -66,12 +67,9 @@ namespace Pc.WebApi.Controllers
         /// Body: { "email": "admin@email.com", "senha": "123456" }
         /// </summary>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] dynamic body)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var email = body?.email?.ToString();
-            var senha = body?.senha?.ToString();
-
-            var admin = await _adminServico.ValidarLoginAsync(email, senha);
+            var admin = await _adminServico.ValidarLoginAsync(dto.Email, dto.Senha);
 
             if (admin == null)
                 return Unauthorized("Email ou senha incorretos.");
@@ -219,12 +217,9 @@ namespace Pc.WebApi.Controllers
         /// Body: { "senhaAtual": "123456", "novaSenha": "654321" }
         /// </summary>
         [HttpPut("{id:guid}/senha")]
-        public async Task<IActionResult> AlterarSenha(Guid id, [FromBody] dynamic body)
+        public async Task<IActionResult> AlterarSenha(Guid id, [FromBody] AlterarSenhaDto dto)
         {
-            var senhaAtual = body?.senhaAtual?.ToString();
-            var novaSenha = body?.novaSenha?.ToString();
-
-            await _adminServico.AlterarSenhaAsync(id, senhaAtual, novaSenha);
+            await _adminServico.AlterarSenhaAsync(id, dto.SenhaAtual, dto.NovaSenha);
 
             return Ok(new { mensagem = "Senha alterada com sucesso" });
         }

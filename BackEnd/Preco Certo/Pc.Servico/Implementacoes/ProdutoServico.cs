@@ -4,11 +4,11 @@ using Pc.Servico.Interfaces;
 
 namespace Pc.Servico.Implementacoes
 {
-    public class ProdutoService : IProdutoServico
+    public class ProdutoServico : IProdutoServico
     {
         private readonly IProdutoRepositorio _produtoRepositorio;
 
-        public ProdutoService(IProdutoRepositorio produtoRepositorio)
+        public ProdutoServico(IProdutoRepositorio produtoRepositorio)
         {
             _produtoRepositorio = produtoRepositorio;
         }
@@ -26,14 +26,17 @@ namespace Pc.Servico.Implementacoes
             return await _produtoRepositorio.ObterPorIdAsync(id);
         }
 
-        public async Task<List<Produto>> ListarProdutosAsync()
+        public async Task<List<Produto>> ListarProdutosAsync(Guid? lojaId = null)
         {
-            return await _produtoRepositorio.ListarAsync();
+            return await _produtoRepositorio.ListarPorLojaAsync(lojaId);
         }
 
-        public async Task<List<Produto>> BuscarPorNomeAsync(string nome)
+        public async Task<List<Produto>> BuscarPorNomeAsync(string nome, Guid? lojaId = null)
         {
-            return await _produtoRepositorio.BuscarPorNomeAsync(nome);
+            if (string.IsNullOrWhiteSpace(nome))
+                return new List<Produto>();
+
+            return await _produtoRepositorio.BuscarPorNomeAsync(nome, lojaId);
         }
 
         public async Task AtualizarAsync(Produto produto)

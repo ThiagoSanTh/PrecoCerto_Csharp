@@ -12,7 +12,7 @@ namespace Pc.Servico.Interfaces
     {
         /// <summary>
         /// Registra um novo lojista (signup)
-        /// Validações: email único, senha mínima 6 chars, LojaId obrigatório
+        /// Validações: email único e senha mínima de 6 caracteres
         /// </summary>
         Task<Lojista> RegistrarAsync(Lojista lojista);
 

@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Pc.Dominio.Entities.Estabelecimentos;
+﻿using Pc.Dominio.Entities.Estabelecimentos;
 using Pc.Repositorio.Interfaces;
 using Pc.Servico.Interfaces;
 
 namespace Pc.Servico.Implementacoes
 {
-    public class LojaService : ILojaServico
+    public class LojaServico : ILojaServico
     {
         private readonly ILojaRepositorio _lojaRepositorio;
 
-        public LojaService(ILojaRepositorio lojaRepositorio)
+        public LojaServico(ILojaRepositorio lojaRepositorio)
         {
             _lojaRepositorio = lojaRepositorio;
         }
@@ -26,12 +21,12 @@ namespace Pc.Servico.Implementacoes
             return await _lojaRepositorio.AdicionarAsync(loja);
         }
 
-        public async Task<Loja?> ObterLojaPorIdAsync(Guid id)
+        public async Task<Loja?> ObterPorIdAsync(Guid id)
         {
             return await _lojaRepositorio.ObterPorIdAsync(id);
         }
 
-        public async Task<List<Loja>> ListarLojasAsync()
+        public async Task<List<Loja>> ListarAsync()
         {
             return await _lojaRepositorio.ListarAsync();
         }
@@ -41,7 +36,7 @@ namespace Pc.Servico.Implementacoes
             return await _lojaRepositorio.BuscarPorNomeAsync(nome);
         }
 
-        public async Task AtualizarLojaAsync(Loja loja)
+        public async Task AtualizarAsync(Loja loja)
         {
             if (string.IsNullOrWhiteSpace(loja.NomeFantasia))
                 throw new Exception("O nome fantasia da loja é obrigatório.");
@@ -49,10 +44,9 @@ namespace Pc.Servico.Implementacoes
             await _lojaRepositorio.AtualizarAsync(loja);
         }
 
-        public async Task RemoverLojaAsync(Guid id)
+        public async Task RemoverAsync(Guid id)
         {
             await _lojaRepositorio.RemoverAsync(id);
         }
-
     }
 }

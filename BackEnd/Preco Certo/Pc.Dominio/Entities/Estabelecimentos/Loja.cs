@@ -18,7 +18,8 @@ namespace Pc.Dominio.Entities.Estabelecimentos
         public Guid EnderecoId { get; set; }
         public Endereco Endereco { get; set; } = new Endereco();
         public ICollection<Oferta> Ofertas { get; set; } = new List<Oferta>();
-        public Guid LojistaId { get; set; }
+        // LojistaId fica opcional para permitir criar/editar loja em etapas.
+        public Guid? LojistaId { get; set; }
         public Lojista? Lojista { get; set; }
     }
 }

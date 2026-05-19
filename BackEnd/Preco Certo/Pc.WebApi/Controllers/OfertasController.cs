@@ -2,7 +2,7 @@
 using Pc.Dominio.Entities.Catalogo;
 using Pc.Dominio.Entities.Estabelecimentos;
 using Pc.Servico.Interfaces;
-using Pc.WebApi.DTOs;
+using Pc.WebApi.DTOs.Estabelecimentos;
 
 namespace Pc.WebApi.Controllers
 {
@@ -42,7 +42,7 @@ namespace Pc.WebApi.Controllers
             return Ok(resposta);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> ObterPorId(Guid id)
         {
             var oferta = await _ofertaServico.ObterPorIdAsync(id);
@@ -70,7 +70,7 @@ namespace Pc.WebApi.Controllers
             return Ok(resposta);
         }
 
-        [HttpGet("produto/{produtoId}")]
+        [HttpGet("produto/{produtoId:guid}")]
         public async Task<IActionResult> ObterPorProduto(Guid produtoId)
         {
             var ofertas = await _ofertaServico.ObterPorProdutoAsync(produtoId);
@@ -130,7 +130,7 @@ namespace Pc.WebApi.Controllers
             return CreatedAtAction(nameof(ObterPorId), new { id = resposta.Id }, resposta);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         public async Task<IActionResult> Atualizar(Guid id, [FromBody] OfertaCriarDto dto)
         {
             var ofertaExistente = await _ofertaServico.ObterPorIdAsync(id);
@@ -153,7 +153,7 @@ namespace Pc.WebApi.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Remover(Guid id)
         {
             var ofertaExistente = await _ofertaServico.ObterPorIdAsync(id);

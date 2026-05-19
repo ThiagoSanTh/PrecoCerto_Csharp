@@ -1,61 +1,154 @@
-import { View, Text, Pressable, FlatList, Alert } from 'react-native';
-import { useEffect, useState } from 'react';
-import { listarProdutos } from '../services/productService';
-import { styles } from '../style';
+import { FlatList, Alert, ActivityIndicator } from 'react-native';
+import { useCallback, useState, useMemo } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { listarProdutosParaFeed, buscarProdutosPorNome } from '../services/productService';
+import { useAuth } from '../context/AuthContext';
+import {
+  FormScreen,
+  FormField,
+  PrimaryButton,
+  ListCard,
+  ListCardText,
+  formStyles,
+} from '../components/form';
+import { colors } from '../style';
+import { filtrarProdutosPorTermo, nomeProduto } from '../utils/produtoUtils';
 
 export default function ProductsScreen({ navigation }) {
-  const [produtos, setProdutos] = useState([]);
+  const { session } = useAuth();
+  const lojaId = session?.perfil?.lojaId;
 
-  useEffect(() => {
-    carregarProdutos();
+  const [termoBusca, setTermoBusca] = useState('');
+  const [produtosBase, setProdutosBase] = useState([]);
+  const [resultadosBusca, setResultadosBusca] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    const unsubscribe = navigation.addListener('focus', () => {
+  useFocusEffect(
+    useCallback(() => {
       carregarProdutos();
-    });
-
-    return unsubscribe;
-  }, [navigation]);
+    }, [lojaId])
+  );
 
   async function carregarProdutos() {
+    if (!lojaId) {
+      setProdutosBase([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setResultadosBusca(null);
     try {
-      const dados = await listarProdutos();
-      setProdutos(dados);
+      const dados = await listarProdutosParaFeed(lojaId);
+      setProdutosBase(dados);
     } catch (error) {
       console.error(error?.response?.data || error.message);
       Alert.alert('Erro', 'Não foi possível carregar os produtos');
+    } finally {
+      setLoading(false);
     }
   }
+
+  async function handleSearch() {
+    const termo = termoBusca.trim();
+    if (!termo) {
+      setResultadosBusca(null);
+      return;
+    }
+
+    if (!lojaId) return;
+
+    setLoading(true);
+    try {
+      let filtrados = filtrarProdutosPorTermo(produtosBase, termo);
+      if (filtrados.length === 0) {
+        filtrados = await buscarProdutosPorNome(termo, lojaId);
+      }
+      setResultadosBusca(filtrados);
+    } catch {
+      Alert.alert('Erro', 'Falha na busca');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const produtosExibidos = useMemo(() => {
+    const base = resultadosBusca ?? produtosBase;
+    if (resultadosBusca) return resultadosBusca;
+    return filtrarProdutosPorTermo(base, termoBusca);
+  }, [produtosBase, resultadosBusca, termoBusca]);
 
   function formatarPreco(valor) {
     return Number(valor).toLocaleString('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     });
   }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.formTitle}>Produtos</Text>
-
-      <Pressable
-        style={styles.formButton}
-        onPress={() => navigation.navigate('CreateProduct')}
+  if (!lojaId) {
+    return (
+      <FormScreen
+        title="Meus produtos"
+        subtitle="Vincule uma loja ao perfil"
+        scrollable={false}
+        footer={
+          <PrimaryButton
+            label="Criar loja"
+            onPress={() => navigation.navigate('CreateStore')}
+          />
+        }
       >
-        <Text style={styles.textButton}>+ Novo Produto</Text>
-      </Pressable>
+        <ListCardText>Cadastre sua loja para gerenciar produtos.</ListCardText>
+      </FormScreen>
+    );
+  }
 
-      <FlatList
-        data={produtos}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text>{item.nome || item.nomeProduto}</Text>
-            <Text>{item.marca}</Text>
-            <Text>{item.descricao}</Text>
-            <Text>{formatarPreco(item.preco)}</Text>
-          </View>
-        )}
+  return (
+    <FormScreen title="Meus produtos" subtitle="Produtos da sua loja" scrollable={false}>
+      <PrimaryButton
+        label="+ Novo produto"
+        onPress={() => navigation.navigate('CreateProduct')}
+        style={{ marginBottom: 12 }}
       />
-    </View>
+
+      <FormField
+        label="Buscar"
+        value={termoBusca}
+        onChangeText={(texto) => {
+          setTermoBusca(texto);
+          if (!texto.trim()) setResultadosBusca(null);
+        }}
+        placeholder="Nome, marca..."
+        onSubmitEditing={handleSearch}
+        returnKeyType="search"
+      />
+      <PrimaryButton label="Buscar" onPress={handleSearch} style={{ marginBottom: 12 }} />
+
+      {loading ? (
+        <ActivityIndicator color={colors.primary} style={{ marginTop: 16 }} />
+      ) : (
+        <FlatList
+          style={formStyles.listFlex}
+          data={produtosExibidos}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item }) => (
+            <ListCard title={nomeProduto(item)}>
+              <ListCardText>{item.marca}</ListCardText>
+              <ListCardText>{item.descricao}</ListCardText>
+              <ListCardText>{formatarPreco(item.preco)}</ListCardText>
+            </ListCard>
+          )}
+          ListEmptyComponent={
+            <ListCardText>
+              {termoBusca.trim()
+                ? 'Nenhum produto encontrado.'
+                : 'Nenhum produto cadastrado para esta loja.'}
+            </ListCardText>
+          }
+        />
+      )}
+    </FormScreen>
   );
 }

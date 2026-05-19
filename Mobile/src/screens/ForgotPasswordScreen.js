@@ -1,9 +1,9 @@
-import { View, Text, TextInput, Pressable, Alert } from 'react-native';
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
-import { styles } from '../style';  
+import { FormScreen, FormField, PrimaryButton, SecondaryButton } from '../components/form';
 
-export default function ForgotPasswordScreen({navigation}) {
+export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
 
   async function handleRecover() {
@@ -24,22 +24,24 @@ export default function ForgotPasswordScreen({navigation}) {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.formTitle}>Recuperar Senha</Text>
-
-      <TextInput
-        style={styles.formInput}
-        placeholder="Digite seu email"
+    <FormScreen
+      title="Recuperar senha"
+      subtitle="Informe o e-mail da conta"
+      onBack={() => navigation.goBack()}
+      footer={
+        <>
+          <PrimaryButton label="Recuperar" onPress={handleRecover} />
+          <SecondaryButton label="Voltar ao login" onPress={() => navigation.goBack()} />
+        </>
+      }
+    >
+      <FormField
+        label="E-mail"
+        value={email}
         onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
       />
-
-      <Pressable style={styles.formButton} onPress={handleRecover}>
-        <Text style={styles.textButton}>Recuperar</Text>
-      </Pressable>
-
-      <Pressable style={styles.formButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.textButton}>Voltar</Text>
-      </Pressable>
-    </View>
+    </FormScreen>
   );
 }

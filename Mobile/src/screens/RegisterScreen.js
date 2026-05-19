@@ -1,83 +1,147 @@
-import { View, Text, TextInput, Pressable, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 import { useState } from 'react';
-import { styles } from '../style';
+import { registrarCliente } from '../services/clienteService';
+import { registrarLojista } from '../services/lojistaService';
+import { obterLocalizacaoAtual } from '../services/locationService';
+import { useAuth } from '../context/AuthContext';
+import {
+  FormScreen,
+  FormField,
+  FormTabs,
+  PrimaryButton,
+  formStyles,
+} from '../components/form';
 
-export default function RegisterScreen({ navigation }) {
+export default function RegisterScreen({ navigation, route }) {
+  const [tipoCadastro, setTipoCadastro] = useState(route?.params?.tipoInicial || 'cliente');
+  const [nomeUsuario, setNomeUsuario] = useState('');
   const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [cargo, setCargo] = useState('Gerente');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { salvarSessao } = useAuth();
 
   async function handleRegister() {
-    if (!email || !senha || !confirmarSenha) {
-      Alert.alert('Erro', 'Preencha todos os campos');
+    if (!nomeUsuario || !email || !senha || !confirmarSenha) {
+      Alert.alert('Erro', 'Preencha todos os campos obrigatórios');
       return;
     }
-  
+
     if (senha !== confirmarSenha) {
       Alert.alert('Erro', 'As senhas não coincidem');
       return;
     }
-  
-    let users = [];
-  
-    const data = await AsyncStorage.getItem('@users');
-  
-    if (data) {
-      users = JSON.parse(data);
-  
-      const userExists = users.find(u => u.email === email);
-  
-      if (userExists) {
-        Alert.alert('Erro', 'E-mail já cadastrado');
+
+    setLoading(true);
+    try {
+      if (tipoCadastro === 'cliente') {
+        let latitudeAtual = null;
+        let longitudeAtual = null;
+
+        try {
+          const coords = await obterLocalizacaoAtual();
+          latitudeAtual = coords.latitude;
+          longitudeAtual = coords.longitude;
+        } catch {
+          Alert.alert(
+            'GPS',
+            'Não foi possível obter sua localização. O cadastro continuará, mas ative o GPS depois no perfil.'
+          );
+        }
+
+        const perfil = await registrarCliente({
+          nomeUsuario: nomeUsuario.trim(),
+          email: email.trim(),
+          senha,
+          telefone: telefone.trim() || null,
+          latitudeAtual,
+          longitudeAtual,
+        });
+
+        await salvarSessao({ tipo: 'cliente', perfil }, 'user');
+        Alert.alert('Sucesso', 'Conta de cliente criada!');
+        navigation.replace('Home');
         return;
       }
+
+      const perfil = await registrarLojista({
+        nomeUsuario: nomeUsuario.trim(),
+        email: email.trim(),
+        senha,
+        telefone: telefone.trim() || null,
+        cargo: cargo.trim() || 'Gerente',
+      });
+
+      await salvarSessao({ tipo: 'lojista', perfil }, 'store');
+      Alert.alert('Sucesso', 'Conta de lojista criada! Agora cadastre sua loja.');
+      navigation.replace('Home');
+    } catch (error) {
+      const msg = error.response?.data || error.message || 'Erro ao cadastrar';
+      Alert.alert('Erro', String(msg));
+    } finally {
+      setLoading(false);
     }
-  
-    users.push({ email, senha });
-  
-    await AsyncStorage.setItem('@users', JSON.stringify(users));
-  
-    Alert.alert('Sucesso', 'Usuário cadastrado!');
-    navigation.goBack();
   }
 
+  const labelCadastro = tipoCadastro === 'cliente' ? 'cliente' : 'lojista';
+
   return (
-    <View style={styles.container}>
-        <Pressable onPress={() => navigation.goBack()}>
-        <Text style={{ color: '#22C55E', marginBottom: 20 }}>
-            ← Voltar
-        </Text>
-        </Pressable>
-      <Text style={styles.formTitle}>Cadastro</Text>
-
-      <TextInput
-        style={styles.formInput}
-        placeholder="E-mail"
-        onChangeText={setEmail}
-      />
-
-      <TextInput
-        style={styles.formInput}
-        placeholder="Senha"
-        secureTextEntry
-        onChangeText={setSenha}
-      />
-
-        <TextInput
-        style={styles.formInput}
-        placeholder="Confirmar senha"
-        secureTextEntry
-        onChangeText={setConfirmarSenha}
+    <FormScreen
+      title="Cadastro"
+      subtitle="Crie sua conta no Preço Certo"
+      onBack={() => navigation.goBack()}
+      footer={
+        <PrimaryButton
+          label={`Cadastrar ${labelCadastro}`}
+          onPress={handleRegister}
+          loading={loading}
         />
+      }
+    >
+      <FormTabs
+        options={[
+          { value: 'cliente', label: 'Cliente' },
+          { value: 'lojista', label: 'Lojista' },
+        ]}
+        value={tipoCadastro}
+        onChange={setTipoCadastro}
+      />
 
-      <Pressable style={styles.formButton} onPress={handleRegister}>
-        <Text style={styles.textButton}>Cadastrar</Text>
-      </Pressable>
+      <Text style={formStyles.sectionHint}>
+        {tipoCadastro === 'cliente'
+          ? 'Latitude e longitude são capturadas automaticamente pelo GPS.'
+          : 'Cadastre a loja com CEP e endereço depois de criar a conta.'}
+      </Text>
 
-      <Pressable style={styles.formButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.textButton}>Voltar</Text>
-      </Pressable>
-    </View>
+      <FormField label="Nome de usuário *" value={nomeUsuario} onChangeText={setNomeUsuario} />
+      <FormField
+        label="E-mail *"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+      <FormField
+        label="Telefone"
+        value={telefone}
+        onChangeText={setTelefone}
+        keyboardType="phone-pad"
+        placeholder="opcional"
+      />
+
+      {tipoCadastro === 'lojista' ? (
+        <FormField label="Cargo na loja" value={cargo} onChangeText={setCargo} />
+      ) : null}
+
+      <FormField label="Senha *" value={senha} onChangeText={setSenha} secureTextEntry />
+      <FormField
+        label="Confirmar senha *"
+        value={confirmarSenha}
+        onChangeText={setConfirmarSenha}
+        secureTextEntry
+      />
+    </FormScreen>
   );
 }

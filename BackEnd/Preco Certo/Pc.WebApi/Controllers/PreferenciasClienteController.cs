@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Pc.Dominio.Entities.Interacoes;
 using Pc.Servico.Interfaces;
-using Pc.WebApi.DTOs;
+using Pc.WebApi.DTOs.Comum;
+using Pc.WebApi.DTOs.Interacoes;
 
 namespace Pc.WebApi.Controllers
 {
@@ -121,14 +122,12 @@ namespace Pc.WebApi.Controllers
         /// Body: { "valor": "desabilitado" }
         /// </summary>
         [HttpPut("cliente/{clienteId:guid}")]
-        public async Task<IActionResult> Atualizar(Guid clienteId, [FromQuery] string chave, [FromBody] dynamic body)
+        public async Task<IActionResult> Atualizar(Guid clienteId, [FromQuery] string chave, [FromBody] PreferenciaValorDto dto)
         {
-            var valor = body?.valor?.ToString();
-
-            if (string.IsNullOrEmpty(valor))
+            if (string.IsNullOrEmpty(dto.Valor))
                 return BadRequest("Valor é obrigatório.");
 
-            await _preferenciaServico.AtualizarAsync(clienteId, chave, valor);
+            await _preferenciaServico.AtualizarAsync(clienteId, chave, dto.Valor);
 
             return Ok(new { mensagem = "Preferência atualizada com sucesso" });
         }

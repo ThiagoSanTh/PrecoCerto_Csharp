@@ -97,7 +97,12 @@ namespace Pc.Infraestrutura.Migrations
                     b.Property<decimal>("Preco")
                         .HasColumnType("numeric");
 
+                    b.Property<Guid?>("LojaId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("LojaId");
 
                     b.ToTable("Produtos");
                 });
@@ -129,7 +134,7 @@ namespace Pc.Infraestrutura.Migrations
                     b.Property<Guid>("EnderecoId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("LojistaId")
+                    b.Property<Guid?>("LojistaId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("NomeFantasia")
@@ -461,7 +466,7 @@ namespace Pc.Infraestrutura.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("LojaId")
+                    b.Property<Guid?>("LojaId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("NomeUsuario")
@@ -496,13 +501,21 @@ namespace Pc.Infraestrutura.Migrations
 
                     b.HasOne("Pc.Dominio.Entities.Usuarios.Lojista", "Lojista")
                         .WithOne("Loja")
-                        .HasForeignKey("Pc.Dominio.Entities.Estabelecimentos.Loja", "LojistaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Pc.Dominio.Entities.Estabelecimentos.Loja", "LojistaId");
 
                     b.Navigation("Endereco");
 
                     b.Navigation("Lojista");
+                });
+
+            modelBuilder.Entity("Pc.Dominio.Entities.Catalogo.Produto", b =>
+                {
+                    b.HasOne("Pc.Dominio.Entities.Estabelecimentos.Loja", "Loja")
+                        .WithMany()
+                        .HasForeignKey("LojaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Loja");
                 });
 
             modelBuilder.Entity("Pc.Dominio.Entities.Estabelecimentos.Oferta", b =>

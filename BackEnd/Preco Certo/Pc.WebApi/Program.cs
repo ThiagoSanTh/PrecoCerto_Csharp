@@ -7,14 +7,12 @@ using Pc.Servico.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔥 FORÇA A API A FICAR ACESSÍVEL NA REDE
 builder.WebHost.UseUrls("http://0.0.0.0:5132");
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 🔥 CORS LIBERADO PRA MOBILE / FRONT
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("MobilePolicy", policy =>
@@ -26,59 +24,51 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 🔥 DI - Repositorios (Catalogo e Estabelecimentos)
+// Repositórios — Catálogo e Estabelecimentos
 builder.Services.AddScoped<IProdutoRepositorio, ProdutoRepositorio>();
 builder.Services.AddScoped<ILojaRepositorio, LojaRepositorio>();
 builder.Services.AddScoped<IOfertaRepositorio, OfertaRepositorio>();
 
-// 🔥 DI - Repositorios (Usuarios) - Consolidado (sem Usuario intermediário)
+// Repositórios — Usuários
 builder.Services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
 builder.Services.AddScoped<ILojistaRepositorio, LojistaRepositorio>();
 builder.Services.AddScoped<IAdminRepositorio, AdminRepositorio>();
 
-// 🔥 DI - Repositorios (Interacoes)
+// Repositórios — Interações
 builder.Services.AddScoped<IFavoritoRepositorio, FavoritoRepositorio>();
 builder.Services.AddScoped<IHistoricoPesquisaRepositorio, HistoricoPesquisaRepositorio>();
 builder.Services.AddScoped<IAvaliacaoRepositorio, AvaliacaoRepositorio>();
 builder.Services.AddScoped<IPreferenciaClienteRepositorio, PreferenciaClienteRepositorio>();
 
-// 🔥 DI - Servicos (Catalogo e Estabelecimentos)
-builder.Services.AddScoped<IProdutoServico, ProdutoService>();
-builder.Services.AddScoped<ILojaServico, LojaService>();
-builder.Services.AddScoped<IOfertaServico, OfertaService>();
+// Serviços — Catálogo e Estabelecimentos
+builder.Services.AddScoped<IProdutoServico, ProdutoServico>();
+builder.Services.AddScoped<ILojaServico, LojaServico>();
+builder.Services.AddScoped<IOfertaServico, OfertaServico>();
 
-// 🔥 DI - Servicos (Usuarios) - Consolidado (sem Usuario intermediário)
+// Serviços — Usuários
 builder.Services.AddScoped<IClienteServico, ClienteServico>();
 builder.Services.AddScoped<ILojistaServico, LojistaServico>();
 builder.Services.AddScoped<IAdminServico, AdminServico>();
 
-// 🔥 DI - Servicos (Interacoes)
+// Serviços — Interações
 builder.Services.AddScoped<IFavoritoServico, FavoritoServico>();
 builder.Services.AddScoped<IHistoricoPesquisaServico, HistoricoPesquisaServico>();
 builder.Services.AddScoped<IAvaliacaoServico, AvaliacaoServico>();
 builder.Services.AddScoped<IPreferenciaClienteServico, PreferenciaClienteServico>();
 
-// 🔥 DB
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
-// Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// 🔥 MUITO IMPORTANTE: CORS antes de tudo
 app.UseCors("MobilePolicy");
-
-// ❌ REMOVE ISSO PRA MOBILE (HTTPS QUEBRA)
-//// app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

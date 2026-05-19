@@ -1,105 +1,345 @@
-import { View, Text, TextInput, Pressable, Alert } from 'react-native';
-import { styles } from '../style';
+import { View, Text, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { criarLoja } from '../services/lojaService';
+import { atualizarLojista } from '../services/lojistaService';
+import { useAuth } from '../context/AuthContext';
+import { buscarEnderecoPorCep, geocodificarEndereco } from '../services/enderecoService';
+import { obterLocalizacaoAtual } from '../services/locationService';
+import {
+  FormScreen,
+  FormField,
+  PrimaryButton,
+  SecondaryButton,
+  formStyles,
+} from '../components/form';
+import { colors } from '../style';
+
+const STEPS = [
+  { key: 'loja', label: 'Loja' },
+  { key: 'endereco', label: 'Endereço' },
+  { key: 'local', label: 'Localização' },
+];
 
 export default function CreateStoreScreen({ navigation }) {
+  const { session, atualizarPerfilSessao } = useAuth();
+  const [step, setStep] = useState(0);
+
   const [nomeFantasia, setNomeFantasia] = useState('');
   const [cnpj, setCnpj] = useState('');
   const [telefone, setTelefone] = useState('');
-  const [email, setEmail] = useState('');
-  const [descricao, setDescricao] = useState('');
+  const [emailLoja, setEmailLoja] = useState('');
 
-  async function handleCreateStore() {
-    if (!nomeFantasia) {
-      Alert.alert('Erro', 'Nome Fantasia é obrigatório');
-      return;
+  const [cep, setCep] = useState('');
+  const [logradouro, setLogradouro] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [estado, setEstado] = useState('');
+
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+
+  const [loading, setLoading] = useState(false);
+  const [loadingCep, setLoadingCep] = useState(false);
+  const [loadingCoords, setLoadingCoords] = useState(false);
+
+  function validarPassoLoja() {
+    if (!nomeFantasia.trim()) {
+      Alert.alert('Loja', 'Informe o nome fantasia.');
+      return false;
     }
-  
-    // 🔐 pega usuário logado
-    const loggedData = await AsyncStorage.getItem('@loggedUser');
-    const loggedUser = JSON.parse(loggedData);
-  
-    if (!loggedUser) {
-      Alert.alert('Erro', 'Usuário não encontrado');
-      return;
-    }
-  
-    // 🏪 cria loja vinculada ao usuário
-    const newStore = {
-      id: Date.now().toString(),
-      nomeFantasia,
-      cnpj,
-      telefone,
-      email,
-      descricao,
-      userEmail: loggedUser.email // 🔥 vínculo aqui
-    };
-  
-    // 💾 salva normalmente
-    const data = await AsyncStorage.getItem('@lojas');
-    let lojas = data ? JSON.parse(data) : [];
-  
-    lojas.push(newStore);
-  
-    await AsyncStorage.setItem('@lojas', JSON.stringify(lojas));
-  
-    await AsyncStorage.setItem('@userMode', 'store');
-  
-    Alert.alert('Sucesso', 'Loja criada com sucesso!');
-  
-    navigation.replace('Home');
+    return true;
   }
 
+  function validarPassoEndereco() {
+    if (!cep.trim() || !logradouro.trim() || !numero.trim() || !cidade.trim() || !estado.trim()) {
+      Alert.alert('Endereço', 'Preencha CEP, logradouro, número, cidade e estado.');
+      return false;
+    }
+    return true;
+  }
+
+  function avancar() {
+    if (step === 0 && !validarPassoLoja()) return;
+    if (step === 1 && !validarPassoEndereco()) return;
+    if (step < STEPS.length - 1) setStep((s) => s + 1);
+  }
+
+  function voltar() {
+    if (step > 0) setStep((s) => s - 1);
+    else navigation.goBack();
+  }
+
+  async function handleBuscarCep() {
+    if (cep.replace(/\D/g, '').length < 8) {
+      Alert.alert('CEP', 'Informe um CEP válido com 8 dígitos.');
+      return;
+    }
+
+    setLoadingCep(true);
+    try {
+      const endereco = await buscarEnderecoPorCep(cep);
+      setCep(endereco.cep);
+      setLogradouro(endereco.logradouro);
+      setBairro(endereco.bairro);
+      setCidade(endereco.cidade);
+      setEstado(endereco.estado);
+      setLatitude(null);
+      setLongitude(null);
+    } catch (error) {
+      Alert.alert('CEP', error.message);
+    } finally {
+      setLoadingCep(false);
+    }
+  }
+
+  async function handleGeocodificar() {
+    if (!validarPassoEndereco()) return;
+
+    setLoadingCoords(true);
+    try {
+      const coords = await geocodificarEndereco({
+        cep,
+        logradouro,
+        numero,
+        bairro,
+        cidade,
+        estado,
+      });
+      setLatitude(coords.latitude);
+      setLongitude(coords.longitude);
+    } catch (error) {
+      Alert.alert('Coordenadas', error.message);
+    } finally {
+      setLoadingCoords(false);
+    }
+  }
+
+  async function handleUsarGpsAtual() {
+    setLoadingCoords(true);
+    try {
+      const coords = await obterLocalizacaoAtual();
+      setLatitude(coords.latitude);
+      setLongitude(coords.longitude);
+    } catch (error) {
+      Alert.alert('GPS', error.message);
+    } finally {
+      setLoadingCoords(false);
+    }
+  }
+
+  async function resolverCoordenadas() {
+    if (latitude !== null && longitude !== null) {
+      return { latitude, longitude };
+    }
+
+    const coords = await geocodificarEndereco({
+      cep,
+      logradouro,
+      numero,
+      bairro,
+      cidade,
+      estado,
+    });
+    setLatitude(coords.latitude);
+    setLongitude(coords.longitude);
+    return coords;
+  }
+
+  async function handleCreateStore() {
+    if (!validarPassoLoja() || !validarPassoEndereco()) {
+      setStep(!nomeFantasia.trim() ? 0 : 1);
+      return;
+    }
+
+    if (session?.tipo !== 'lojista' || !session?.perfil?.id) {
+      Alert.alert('Erro', 'Faça login como lojista para criar uma loja');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      let lat = latitude;
+      let lng = longitude;
+
+      if (lat === null || lng === null) {
+        try {
+          const coords = await resolverCoordenadas();
+          lat = coords.latitude;
+          lng = coords.longitude;
+        } catch {
+          lat = null;
+          lng = null;
+        }
+      }
+
+      const loja = await criarLoja({
+        nomeFantasia: nomeFantasia.trim(),
+        cnpj: cnpj.trim() || null,
+        telefone: telefone.trim() || null,
+        email: emailLoja.trim() || session.perfil.email,
+        lojistaId: session.perfil.id,
+        endereco: {
+          cep,
+          logradouro,
+          numero,
+          bairro,
+          cidade,
+          estado,
+          latitude: lat,
+          longitude: lng,
+        },
+      });
+
+      await atualizarLojista(session.perfil.id, {
+        nomeUsuario: session.perfil.nomeUsuario || nomeFantasia,
+        email: session.perfil.email,
+        telefone: telefone.trim() || session.perfil.telefone,
+        lojaId: loja.id,
+        cargo: session.perfil.cargo || 'Gerente',
+      });
+
+      await atualizarPerfilSessao(
+        {
+          lojaId: loja.id,
+          nomeLoja: loja.nomeFantasia,
+        },
+        'store'
+      );
+
+      Alert.alert('Sucesso', 'Loja criada e vinculada ao lojista!');
+      navigation.replace('Home');
+    } catch (error) {
+      const msg = error.response?.data || error.message;
+      Alert.alert('Erro', String(msg));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const coordsOk = latitude !== null && longitude !== null;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.formTitle}>Criar Loja 🏪</Text>
+    <FormScreen
+      title="Criar loja"
+      onBack={voltar}
+      backLabel={step === 0 ? 'Voltar' : 'Anterior'}
+      steps={STEPS}
+      currentStep={step}
+      footer={
+        step < STEPS.length - 1 ? (
+          <PrimaryButton label="Continuar" onPress={avancar} />
+        ) : (
+          <PrimaryButton label="Criar loja" onPress={handleCreateStore} loading={loading} />
+        )
+      }
+    >
+      {step === 0 && (
+        <View style={formStyles.section}>
+          <Text style={formStyles.sectionHint}>Dados principais da loja</Text>
+          <FormField
+            label="Nome fantasia *"
+            value={nomeFantasia}
+            onChangeText={setNomeFantasia}
+            autoFocus
+          />
+          <FormField label="CNPJ" value={cnpj} onChangeText={setCnpj} />
+          <FormField
+            label="Telefone"
+            value={telefone}
+            onChangeText={setTelefone}
+            keyboardType="phone-pad"
+          />
+          <FormField
+            label="E-mail da loja"
+            value={emailLoja}
+            onChangeText={setEmailLoja}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholder={session?.perfil?.email || 'opcional'}
+          />
+        </View>
+      )}
 
-      <TextInput
-        style={styles.formInput}
-        placeholder="Nome Fantasia *"
-        value={nomeFantasia}
-        onChangeText={setNomeFantasia}
-      />
+      {step === 1 && (
+        <View style={formStyles.section}>
+          <Text style={formStyles.sectionHint}>CEP preenche o endereço automaticamente</Text>
+          <View style={formStyles.cepRow}>
+            <View style={formStyles.cepInputWrap}>
+              <FormField
+                label="CEP *"
+                value={cep}
+                onChangeText={setCep}
+                keyboardType="number-pad"
+                compact
+              />
+            </View>
+            <Pressable
+              style={[formStyles.cepButton, loadingCep && formStyles.buttonDisabled]}
+              onPress={handleBuscarCep}
+              disabled={loadingCep}
+            >
+              {loadingCep ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={formStyles.cepButtonText}>Buscar</Text>
+              )}
+            </Pressable>
+          </View>
+          <FormField label="Logradouro *" value={logradouro} onChangeText={setLogradouro} />
+          <FormField label="Número *" value={numero} onChangeText={setNumero} />
+          <FormField label="Bairro" value={bairro} onChangeText={setBairro} />
+          <View style={formStyles.row}>
+            <View style={formStyles.rowItemLarge}>
+              <FormField label="Cidade *" value={cidade} onChangeText={setCidade} compact />
+            </View>
+            <View style={formStyles.rowItemSmall}>
+              <FormField
+                label="UF *"
+                value={estado}
+                onChangeText={setEstado}
+                maxLength={2}
+                autoCapitalize="characters"
+                compact
+              />
+            </View>
+          </View>
+        </View>
+      )}
 
-      <TextInput
-        style={styles.formInput}
-        placeholder="CNPJ"
-        value={cnpj}
-        onChangeText={setCnpj}
-      />
-
-      <TextInput
-        style={styles.formInput}
-        placeholder="Telefone"
-        value={telefone}
-        onChangeText={setTelefone}
-      />
-
-      <TextInput
-        style={styles.formInput}
-        placeholder="Email da loja"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <TextInput
-        style={styles.formInput}
-        placeholder="Descrição"
-        value={descricao}
-        onChangeText={setDescricao}
-      />
-
-      <Pressable style={styles.formButton} onPress={handleCreateStore}>
-        <Text style={styles.textButton}>Criar Loja</Text>
-      </Pressable>
-
-      <Pressable
-        style={styles.formButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Text style={styles.textButton}>Voltar</Text>
-      </Pressable>
-    </View>
+      {step === 2 && (
+        <View style={formStyles.section}>
+          <Text style={formStyles.sectionHint}>
+            Opcional: ajuda clientes a encontrar sua loja no mapa. Se pular, tentamos pelo endereço
+            ao salvar.
+          </Text>
+          <View style={formStyles.summaryCard}>
+            <Text style={formStyles.summaryTitle}>{nomeFantasia || '—'}</Text>
+            <Text style={formStyles.summaryText}>
+              {logradouro}, {numero}
+              {bairro ? ` · ${bairro}` : ''}
+            </Text>
+            <Text style={formStyles.summaryText}>
+              {cidade}/{estado} · CEP {cep}
+            </Text>
+          </View>
+          <Text style={[formStyles.sectionHint, { color: colors.primaryDark, marginBottom: 12 }]}>
+            {coordsOk
+              ? `Coordenadas: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`
+              : 'Coordenadas ainda não definidas'}
+          </Text>
+          <SecondaryButton
+            label="Buscar pelo endereço"
+            onPress={handleGeocodificar}
+            disabled={loadingCoords}
+          />
+          <SecondaryButton
+            label="Usar minha localização (GPS)"
+            onPress={handleUsarGpsAtual}
+            disabled={loadingCoords}
+          />
+        </View>
+      )}
+    </FormScreen>
   );
 }

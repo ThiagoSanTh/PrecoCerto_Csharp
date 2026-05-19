@@ -6,6 +6,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import CreateStoreScreen from '../screens/CreateStoreScreen';
 import CreateProductScreen from '../screens/CreateProductScreen';
+import CreateOfertaScreen from '../screens/CreateOfertaScreen';
 
 import AppRoutes from './AppRoutes';
 
@@ -14,20 +15,14 @@ const Stack = createNativeStackNavigator();
 export default function Routes() {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Cadastro" component={RegisterScreen} />
-        <Stack.Screen name="EsqueciSenha" component={ForgotPasswordScreen} />
-        <Stack.Screen name="CreateStore" component={CreateStoreScreen} />
-        <Stack.Screen name="CreateProduct" component={CreateProductScreen} />
-
-        <Stack.Screen 
-          name="Home" 
-          component={AppRoutes}
-          options={{ headerShown: false }}
-        />
-
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Cadastro" component={RegisterScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="EsqueciSenha" component={ForgotPasswordScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CreateStore" component={CreateStoreScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CreateProduct" component={CreateProductScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CreateOferta" component={CreateOfertaScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Home" component={AppRoutes} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
